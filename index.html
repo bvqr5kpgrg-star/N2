@@ -5,95 +5,38 @@
 <title>HELL ISLE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  margin:0;
-  background:#000;
-  color:#eee;
-  font-family:monospace;
-}
-#game{
-  max-width:420px;
-  margin:auto;
-  padding:10px;
-}
+body{margin:0;background:#000;color:#eee;font-family:monospace}
+#game{max-width:420px;margin:auto;padding:10px}
 h1{text-align:center;letter-spacing:4px}
 
-.panel{
-  background:#0b0b0b;
-  border:1px solid #222;
-  padding:8px;
-  margin-bottom:8px;
-}
-
-/* MAP */
-#map{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:4px;
-}
-.tile{
-  height:52px;
-  background:#111;
-  border:1px solid #222;
-  position:relative;
-  overflow:hidden;
-}
-
-/* SPRITES */
-.player{
-  background:radial-gradient(circle,#ff3b3b,#8b0000);
-  animation:pulse 1.2s infinite;
-}
-.enemy{
-  background:radial-gradient(circle,#660000,#220000);
-}
-.quest{
-  background:radial-gradient(circle,#333366,#111133);
-}
-
-/* EFFECTS */
-.hit{
-  animation:hit .25s;
-}
-.slash::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(45deg,transparent,rgba(255,0,0,.8),transparent);
-  animation:slash .3s;
-}
-
-@keyframes pulse{
-  0%{box-shadow:0 0 6px crimson}
-  50%{box-shadow:0 0 18px crimson}
-  100%{box-shadow:0 0 6px crimson}
-}
-@keyframes hit{
-  0%{transform:translate(0)}
-  25%{transform:translate(-4px)}
-  50%{transform:translate(4px)}
-  100%{transform:translate(0)}
-}
-@keyframes slash{
-  from{opacity:1}
-  to{opacity:0}
-}
-
 /* UI */
-button{
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  background:#111;
-  color:#fff;
-  border:1px solid #333;
-}
+.panel{background:#0b0b0b;border:1px solid #222;padding:8px;margin-bottom:8px}
+button{width:100%;padding:10px;margin-top:5px;background:#111;color:#fff;border:1px solid #333}
 button:hover{background:#8b0000}
 
-#controls{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
+/* MAP */
+#map{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.tile{height:48px;background:#111;border:1px solid #222}
+.player{background:#8b0000}
+.enemyTile{background:#400}
+
+/* CARDS */
+#hand{display:flex;gap:6px}
+.card{
+flex:1;background:#111;border:1px solid #444;
+padding:6px;text-align:center;cursor:pointer
+}
+.card.common{border-color:#777}
+.card.rare{border-color:#3af}
+.card.legendary{border-color:#f90}
+
+/* EFFECT */
+.shake{animation:shake .2s}
+@keyframes shake{
+0%{transform:translate(0)}
+25%{transform:translate(-4px)}
+50%{transform:translate(4px)}
+100%{transform:translate(0)}
 }
 </style>
 </head>
@@ -104,157 +47,155 @@ button:hover{background:#8b0000}
 
 <div id="stats" class="panel"></div>
 
+<div class="panel"><div id="map"></div></div>
+
+<div id="story" class="panel"></div>
+
+<div id="hand" class="panel"></div>
+
 <div class="panel">
-<div id="map"></div>
+<button onclick="openDeck()">DECK</button>
+<button onclick="openSkills()">SKILLS</button>
 </div>
 
-<div id="text" class="panel"></div>
-<div id="choices"></div>
-
-<div id="controls" class="panel">
-<div></div><button onclick="move(0,-1)">⬆</button><div></div>
+<div class="panel" id="controls">
+<button onclick="move(0,-1)">⬆</button>
 <button onclick="move(-1,0)">⬅</button>
 <button onclick="move(1,0)">➡</button>
-<div></div><button onclick="move(0,1)">⬇</button><div></div>
+<button onclick="move(0,1)">⬇</button>
 </div>
 </div>
 
 <script>
-/* ===== GAME STATE ===== */
+/* ================= PLAYER ================= */
+let player={
+hp:100,sanity:100,x:2,y:2,
+deck:[
+{name:"Slash",type:"atk",val:10,rarity:"common"},
+{name:"Block",type:"def",val:6,rarity:"common"},
+{name:"Focus",type:"san",val:5,rarity:"common"}
+],
+hand:[],
+skills:{power:false,focus:false}
+};
+
+let enemy=null;
 let state="explore";
 
-let player={hp:100,sanity:100,x:2,y:2};
-let enemy=null;
-
-/* ===== MAP ===== */
+/* ================= MAP ================= */
 let map=[];
 for(let y=0;y<5;y++){
-  map[y]=[];
-  for(let x=0;x<5;x++){
-    let r=Math.random();
-    map[y][x]=r<0.15?"enemy":r<0.25?"quest":"empty";
-  }
+map[y]=[];
+for(let x=0;x<5;x++){
+map[y][x]=Math.random()<0.2?"enemy":"empty";
+}
 }
 
-/* ===== RENDER ===== */
+/* ================= RENDER ================= */
 function render(){
-  document.getElementById("stats").innerText =
-    `❤️ ${player.hp} | 🧠 ${player.sanity}`;
-  renderMap();
+document.getElementById("stats").innerText=
+`❤️ ${player.hp} | 🧠 ${player.sanity}`;
+renderMap(); renderHand();
 }
 
 function renderMap(){
-  const m=document.getElementById("map");
-  m.innerHTML="";
-  for(let y=0;y<5;y++){
-    for(let x=0;x<5;x++){
-      const d=document.createElement("div");
-      d.className="tile";
-      if(map[y][x]==="enemy") d.classList.add("enemy");
-      if(map[y][x]==="quest") d.classList.add("quest");
-      if(x===player.x && y===player.y) d.classList.add("player");
-      m.appendChild(d);
-    }
-  }
+const m=document.getElementById("map"); m.innerHTML="";
+for(let y=0;y<5;y++)for(let x=0;x<5;x++){
+let d=document.createElement("div");
+d.className="tile";
+if(map[y][x]==="enemy")d.classList.add("enemyTile");
+if(x===player.x&&y===player.y)d.classList.add("player");
+m.appendChild(d);
+}
 }
 
-/* ===== MOVEMENT ===== */
+function renderHand(){
+const h=document.getElementById("hand"); h.innerHTML="";
+if(state!=="combat")return;
+player.hand.forEach((c,i)=>{
+let d=document.createElement("div");
+d.className=`card ${c.rarity}`;
+d.innerHTML=`<b>${c.name}</b><br>${c.val}`;
+d.onclick=()=>playCard(i);
+h.appendChild(d);
+});
+}
+
+/* ================= MOVE ================= */
 function move(dx,dy){
-  if(state!=="explore") return;
-  let nx=player.x+dx, ny=player.y+dy;
-  if(nx<0||ny<0||nx>4||ny>4) return;
-  player.x=nx; player.y=ny;
-  triggerTile();
-  render();
+if(state!=="explore")return;
+let nx=player.x+dx, ny=player.y+dy;
+if(nx<0||ny<0||nx>4||ny>4)return;
+player.x=nx; player.y=ny;
+if(map[ny][nx]==="enemy")startCombat();
+render();
 }
 
-/* ===== EVENTS ===== */
-function triggerTile(){
-  let t=map[player.y][player.x];
-  if(t==="enemy") startCombat();
-  else if(t==="quest") startQuest();
-  else showText("The darkness watches...");
-}
-
-/* ===== QUEST ===== */
-function startQuest(){
-  state="event";
-  showChoices(
-    "A strange object hums softly.",
-    [
-      {t:"Touch it",f:()=>{player.sanity-=5; endEvent("Your head aches.")}},
-      {t:"Ignore",f:()=>endEvent("You walk away.")}
-    ]
-  );
-}
-function endEvent(msg){
-  state="explore";
-  map[player.y][player.x]="empty";
-  showText(msg);
-}
-
-/* ===== COMBAT ===== */
+/* ================= COMBAT ================= */
 function startCombat(){
-  state="combat";
-  enemy={hp:30};
-  showChoices(
-    "A creature lunges!",
-    [{t:"Attack",f:attack},{t:"Run",f:run}]
-  );
+state="combat";
+enemy={hp:40,deck:[
+{name:"Claw",val:8},
+{name:"Bite",val:12}
+]};
+drawHand();
+story("An enemy appears!");
 }
 
-function attack(){
-  enemy.hp-=10;
-  player.hp-=7;
-  animateHit();
-
-  if(enemy.hp<=0){
-    state="explore";
-    map[player.y][player.x]="empty";
-    showText("The creature dissolves.");
-  }else{
-    showChoices(
-      `Enemy HP: ${enemy.hp}`,
-      [{t:"Attack Again",f:attack}]
-    );
-  }
-  render();
+function drawHand(){
+player.hand=[];
+for(let i=0;i<3;i++){
+let c=player.deck[Math.floor(Math.random()*player.deck.length)];
+player.hand.push({...c});
+}
 }
 
-function run(){
-  state="explore";
-  showText("You escape, breathing hard.");
+function playCard(i){
+let c=player.hand[i];
+animate();
+if(c.type==="atk")enemy.hp-=c.val;
+if(c.type==="def")player.hp+=c.val;
+if(c.type==="san")player.sanity+=c.val;
+
+if(enemy.hp<=0){
+state="explore";
+map[player.y][player.x]="empty";
+story("Enemy defeated!");
+}else{
+enemyTurn();
+drawHand();
+}
+render();
 }
 
-/* ===== VISUAL EFFECTS ===== */
-function animateHit(){
-  const tiles=document.querySelectorAll(".tile");
-  tiles.forEach(t=>{
-    if(t.classList.contains("player")){
-      t.classList.add("hit","slash");
-      setTimeout(()=>t.classList.remove("hit","slash"),300);
-    }
-  });
+function enemyTurn(){
+let c=enemy.deck[Math.floor(Math.random()*enemy.deck.length)];
+player.hp-=c.val;
+story(`Enemy uses ${c.name}`);
+if(player.hp<=0)story("You died.");
 }
 
-/* ===== UI ===== */
-function showText(msg){
-  document.getElementById("text").innerText=msg;
-  document.getElementById("choices").innerHTML="";
-}
-function showChoices(msg,choices){
-  showText(msg);
-  const c=document.getElementById("choices");
-  choices.forEach(o=>{
-    const b=document.createElement("button");
-    b.innerText=o.t;
-    b.onclick=o.f;
-    c.appendChild(b);
-  });
+/* ================= DECK ================= */
+function openDeck(){
+let text="DECK:\n";
+player.deck.forEach(c=>text+=`${c.name} (${c.rarity})\n`);
+story(text);
 }
 
-/* ===== START ===== */
-showText("You awaken on Hell Isle.");
+/* ================= SKILLS ================= */
+function openSkills(){
+story("Skills:\n• Power Strike\n• Mental Focus");
+}
+
+/* ================= UI ================= */
+function story(t){document.getElementById("story").innerText=t}
+function animate(){
+document.getElementById("game").classList.add("shake");
+setTimeout(()=>game.classList.remove("shake"),200);
+}
+
+/* ================= START ================= */
+story("You awaken on Hell Isle.");
 render();
 </script>
 </body>
