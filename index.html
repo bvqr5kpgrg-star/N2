@@ -5,320 +5,257 @@
 <title>HELL ISLE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-:root{
---bg:#020202;--panel:#0b0b0b;--border:#222;--accent:#8b0000;
-}
 body{
-margin:0;
-background:radial-gradient(circle at center,#111,#000 75%);
-color:#e6e6e6;
-font-family:monospace;
-overflow:hidden;
-}
-#vignette{
-position:fixed;inset:0;
-pointer-events:none;
-box-shadow:inset 0 0 200px #000;
+  margin:0;
+  background:#000;
+  color:#eee;
+  font-family:monospace;
 }
 #game{
-max-width:900px;margin:auto;padding:10px;position:relative;
+  max-width:420px;
+  margin:auto;
+  padding:10px;
 }
-h1{text-align:center;letter-spacing:6px}
+h1{text-align:center;letter-spacing:4px}
 
 .panel{
-background:var(--panel);
-border:1px solid var(--border);
-padding:8px;margin-bottom:8px;
+  background:#0b0b0b;
+  border:1px solid #222;
+  padding:8px;
+  margin-bottom:8px;
 }
 
-#stats span{margin-right:10px}
-
-#map,#minimap{
-display:grid;grid-template-columns:repeat(5,1fr);gap:3px
+/* MAP */
+#map{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:4px;
 }
 .tile{
-height:50px;background:#111;border:1px solid #222;
+  height:52px;
+  background:#111;
+  border:1px solid #222;
+  position:relative;
+  overflow:hidden;
 }
-.player{background:crimson}
-.fog{background:#000}
-.explored{box-shadow:inset 0 0 20px #000}
 
-button{
-width:100%;padding:10px;margin-top:5px;
-background:#111;color:#fff;border:1px solid #333
+/* SPRITES */
+.player{
+  background:radial-gradient(circle,#ff3b3b,#8b0000);
+  animation:pulse 1.2s infinite;
 }
-button:hover{background:var(--accent)}
+.enemy{
+  background:radial-gradient(circle,#660000,#220000);
+}
+.quest{
+  background:radial-gradient(circle,#333366,#111133);
+}
+
+/* EFFECTS */
+.hit{
+  animation:hit .25s;
+}
+.slash::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(45deg,transparent,rgba(255,0,0,.8),transparent);
+  animation:slash .3s;
+}
+
+@keyframes pulse{
+  0%{box-shadow:0 0 6px crimson}
+  50%{box-shadow:0 0 18px crimson}
+  100%{box-shadow:0 0 6px crimson}
+}
+@keyframes hit{
+  0%{transform:translate(0)}
+  25%{transform:translate(-4px)}
+  50%{transform:translate(4px)}
+  100%{transform:translate(0)}
+}
+@keyframes slash{
+  from{opacity:1}
+  to{opacity:0}
+}
+
+/* UI */
+button{
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+  background:#111;
+  color:#fff;
+  border:1px solid #333;
+}
+button:hover{background:#8b0000}
 
 #controls{
-display:grid;grid-template-columns:repeat(3,1fr);gap:5px
-}
-
-.glitch{animation:glitch .2s infinite}
-@keyframes glitch{
-0%{transform:translate(0)}
-50%{transform:translate(2px,-2px)}
-100%{transform:translate(-2px,2px)}
-}
-
-.pulse{
-animation:pulse 1s infinite;
-}
-@keyframes pulse{
-0%{opacity:1}
-50%{opacity:.6}
-100%{opacity:1}
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
 }
 </style>
 </head>
 
 <body>
-<div id="vignette"></div>
-
 <div id="game">
 <h1>HELL ISLE</h1>
 
 <div id="stats" class="panel"></div>
 
 <div class="panel">
-<b>WORLD</b>
 <div id="map"></div>
 </div>
 
-<div class="panel">
-<b>MINIMAP</b>
-<div id="minimap"></div>
-</div>
-
-<div id="story" class="panel"></div>
+<div id="text" class="panel"></div>
 <div id="choices"></div>
 
 <div id="controls" class="panel">
 <div></div><button onclick="move(0,-1)">⬆</button><div></div>
 <button onclick="move(-1,0)">⬅</button>
-<button onclick="openSkills()">SKILLS</button>
 <button onclick="move(1,0)">➡</button>
 <div></div><button onclick="move(0,1)">⬇</button><div></div>
 </div>
 </div>
 
-<audio id="whisper" loop>
-<source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=">
-</audio>
-
 <script>
-/* ================= SAVE VERSION ================= */
-const SAVE_VERSION=2;
+/* ===== GAME STATE ===== */
+let state="explore";
 
-/* ================= PLAYER ================= */
-let player={
-hp:100,maxHp:100,sanity:100,corruption:0,
-x:0,y:0,episode:1,level:1,
-inventory:[
-{name:"Rusty Blade",dmg:5,rarity:"common",upgrade:0}
-],
-weapon:0,
-skills:{hp:0,sanity:0,damage:0},
-companion:null
-};
+let player={hp:100,sanity:100,x:2,y:2};
+let enemy=null;
 
-/* ================= ENEMIES ================= */
-const enemies={
-fast:{hp:30,dmg:12,sanity:2},
-tank:{hp:80,dmg:8,sanity:1},
-mind:{hp:40,dmg:6,sanity:8}
-};
-
-/* ================= COMPANIONS ================= */
-const companions={
-monk:{name:"Silent Monk",heal:2},
-rogue:{name:"Lost Rogue",damage:6}
-};
-
-/* ================= WORLD ================= */
-let world={},explored={};
-const key=(x,y)=>x+","+y;
-
-function genTile(x,y){
-let r=Math.random(),t="empty";
-if(r<0.12)t="enemy";
-else if(r<0.18)t="quest";
-else if(r<0.21)t="boss";
-world[key(x,y)]={type:t,cleared:false};
+/* ===== MAP ===== */
+let map=[];
+for(let y=0;y<5;y++){
+  map[y]=[];
+  for(let x=0;x<5;x++){
+    let r=Math.random();
+    map[y][x]=r<0.15?"enemy":r<0.25?"quest":"empty";
+  }
 }
 
-/* ================= MAP ================= */
-function renderMap(){
-let map=document.getElementById("map");
-map.innerHTML="";
-for(let j=-2;j<=2;j++)for(let i=-2;i<=2;i++){
-let tx=player.x+i,ty=player.y+j;
-let k=key(tx,ty);if(!world[k])genTile(tx,ty);
-let d=document.createElement("div");
-d.className="tile";
-if(!explored[k])d.classList.add("fog");else d.classList.add("explored");
-if(i===0&&j===0)d.classList.add("player");
-map.appendChild(d);
-}
-renderMini();
-}
-
-function renderMini(){
-let mini=document.getElementById("minimap");
-mini.innerHTML="";
-for(let i=0;i<25;i++){
-let d=document.createElement("div");
-d.className="tile";
-d.style.height="15px";
-mini.appendChild(d);
-}
-}
-
-/* ================= AUDIO ================= */
-const whisper=document.getElementById("whisper");
-function audioUpdate(){
-if(player.sanity<60){
-whisper.volume=(60-player.sanity)/60;
-whisper.play();
-}else whisper.pause();
-}
-
-/* ================= STORY & CUTSCENE ================= */
-function typeText(text,cb){
-let i=0,box=document.getElementById("story");
-box.innerText="";
-let timer=setInterval(()=>{
-box.innerText+=text[i++];
-if(i>=text.length){clearInterval(timer);if(cb)cb();}
-},25);
-}
-
-function cutscene(text,next){
-typeText(text,()=>showChoices("",[{t:"Continue",f:next}]));
-}
-
-/* ================= MOVEMENT ================= */
-function move(dx,dy){
-player.x+=dx;player.y+=dy;
-player.sanity-=2;
-explored[key(player.x,player.y)]=true;
-encounter();
-render();
-}
-
-/* ================= ENCOUNTERS ================= */
-function encounter(){
-let tile=world[key(player.x,player.y)];
-if(tile.cleared)return;
-if(tile.type==="enemy")fight(false);
-if(tile.type==="boss")fight(true);
-if(tile.type==="quest")quest();
-tile.cleared=true;
-}
-
-/* ================= QUEST ================= */
-function quest(){
-showChoices("A relic hums with power…",
-[
-{t:"Upgrade Weapon",f:upgradeWeapon},
-{t:"Recruit Companion",f:()=>player.companion=companions.rogue},
-{t:"Leave",f:()=>player.sanity+=5}
-]);
-}
-
-/* ================= COMBAT ================= */
-function fight(boss){
-let enemyType=boss?"tank":Object.keys(enemies)[Math.floor(Math.random()*3)];
-let e=boss?{hp:120,dmg:20,sanity:5}:enemies[enemyType];
-let weapon=player.inventory[player.weapon];
-let dmg=weapon.dmg+weapon.upgrade*3+player.skills.damage*3;
-while(e.hp>0&&player.hp>0){
-e.hp-=Math.random()*dmg;
-player.hp-=Math.random()*e.dmg;
-player.sanity-=e.sanity;
-if(player.companion?.heal)player.hp+=player.companion.heal;
-}
-if(player.hp<=0||player.sanity<=0)end();
-}
-
-/* ================= WEAPON UPGRADE ================= */
-function upgradeWeapon(){
-let w=player.inventory[player.weapon];
-w.upgrade++;
-w.dmg+=3;
-player.sanity-=3;
-}
-
-/* ================= SKILLS ================= */
-function openSkills(){
-showChoices("SKILL TREE",
-[
-{t:"+Max HP",f:()=>{player.maxHp+=10;player.skills.hp++}},
-{t:"+Sanity",f:()=>{player.sanity+=10;player.skills.sanity++}},
-{t:"+Damage",f:()=>player.skills.damage++},
-{t:"Close",f:()=>{}}
-]);
-}
-
-/* ================= UI ================= */
-function showChoices(msg,arr){
-let s=document.getElementById("story");
-s.innerText=msg;
-s.classList.toggle("glitch",player.sanity<40);
-let c=document.getElementById("choices");
-c.innerHTML="";
-arr.forEach(o=>{
-let b=document.createElement("button");
-b.innerText=o.t;
-b.onclick=()=>{o.f();render()};
-c.appendChild(b);
-});
-}
-
-function stats(){
-let st=document.getElementById("stats");
-st.innerHTML=
-`❤️ ${player.hp}/${player.maxHp}
-🧠 ${player.sanity}
-☣️ ${player.corruption}
-⚔️ ${player.inventory[player.weapon].name}+${player.inventory[player.weapon].upgrade}
-🤝 ${player.companion?player.companion.name:"None"}
-📦 EP ${player.episode}`;
-if(player.hp<30)st.classList.add("pulse");
-else st.classList.remove("pulse");
-}
-
-/* ================= SAVE ================= */
-function save(){
-localStorage.setItem("hellIsleSave",JSON.stringify({v:SAVE_VERSION,player,world,explored}));
-}
-function load(){
-let s=JSON.parse(localStorage.getItem("hellIsleSave"));
-if(s&&s.v===SAVE_VERSION){
-player=s.player;world=s.world;explored=s.explored;
-}
-}
-
-/* ================= END ================= */
-function end(){
-cutscene(
-player.corruption>50
-?"You transcend humanity. Eternal watcher."
-:"You flee the island, sanity shattered.",
-()=>location.reload()
-);
-}
-
-/* ================= RENDER ================= */
+/* ===== RENDER ===== */
 function render(){
-stats();renderMap();audioUpdate();save();
+  document.getElementById("stats").innerText =
+    `❤️ ${player.hp} | 🧠 ${player.sanity}`;
+  renderMap();
 }
 
-/* ================= START ================= */
-load();
-cutscene(
-"Chains rot away as black sand clings to your skin. The island inhales.",
-render
-);
+function renderMap(){
+  const m=document.getElementById("map");
+  m.innerHTML="";
+  for(let y=0;y<5;y++){
+    for(let x=0;x<5;x++){
+      const d=document.createElement("div");
+      d.className="tile";
+      if(map[y][x]==="enemy") d.classList.add("enemy");
+      if(map[y][x]==="quest") d.classList.add("quest");
+      if(x===player.x && y===player.y) d.classList.add("player");
+      m.appendChild(d);
+    }
+  }
+}
+
+/* ===== MOVEMENT ===== */
+function move(dx,dy){
+  if(state!=="explore") return;
+  let nx=player.x+dx, ny=player.y+dy;
+  if(nx<0||ny<0||nx>4||ny>4) return;
+  player.x=nx; player.y=ny;
+  triggerTile();
+  render();
+}
+
+/* ===== EVENTS ===== */
+function triggerTile(){
+  let t=map[player.y][player.x];
+  if(t==="enemy") startCombat();
+  else if(t==="quest") startQuest();
+  else showText("The darkness watches...");
+}
+
+/* ===== QUEST ===== */
+function startQuest(){
+  state="event";
+  showChoices(
+    "A strange object hums softly.",
+    [
+      {t:"Touch it",f:()=>{player.sanity-=5; endEvent("Your head aches.")}},
+      {t:"Ignore",f:()=>endEvent("You walk away.")}
+    ]
+  );
+}
+function endEvent(msg){
+  state="explore";
+  map[player.y][player.x]="empty";
+  showText(msg);
+}
+
+/* ===== COMBAT ===== */
+function startCombat(){
+  state="combat";
+  enemy={hp:30};
+  showChoices(
+    "A creature lunges!",
+    [{t:"Attack",f:attack},{t:"Run",f:run}]
+  );
+}
+
+function attack(){
+  enemy.hp-=10;
+  player.hp-=7;
+  animateHit();
+
+  if(enemy.hp<=0){
+    state="explore";
+    map[player.y][player.x]="empty";
+    showText("The creature dissolves.");
+  }else{
+    showChoices(
+      `Enemy HP: ${enemy.hp}`,
+      [{t:"Attack Again",f:attack}]
+    );
+  }
+  render();
+}
+
+function run(){
+  state="explore";
+  showText("You escape, breathing hard.");
+}
+
+/* ===== VISUAL EFFECTS ===== */
+function animateHit(){
+  const tiles=document.querySelectorAll(".tile");
+  tiles.forEach(t=>{
+    if(t.classList.contains("player")){
+      t.classList.add("hit","slash");
+      setTimeout(()=>t.classList.remove("hit","slash"),300);
+    }
+  });
+}
+
+/* ===== UI ===== */
+function showText(msg){
+  document.getElementById("text").innerText=msg;
+  document.getElementById("choices").innerHTML="";
+}
+function showChoices(msg,choices){
+  showText(msg);
+  const c=document.getElementById("choices");
+  choices.forEach(o=>{
+    const b=document.createElement("button");
+    b.innerText=o.t;
+    b.onclick=o.f;
+    c.appendChild(b);
+  });
+}
+
+/* ===== START ===== */
+showText("You awaken on Hell Isle.");
+render();
 </script>
 </body>
 </html>
