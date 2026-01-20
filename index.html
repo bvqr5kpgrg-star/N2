@@ -2,52 +2,85 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>HELL ISLE – CARD CAMPAIGN</title>
+<title>HELL ISLE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{margin:0;background:#000;color:#eee;font-family:monospace}
-#game{max-width:480px;margin:auto;padding:10px}
-h1{text-align:center;letter-spacing:4px}
+body{
+  margin:0;
+  background:radial-gradient(circle at center,#111,#000 75%);
+  color:#eee;
+  font-family:monospace;
+}
+#game{
+  max-width:480px;
+  margin:auto;
+  padding:10px;
+}
+h1{
+  text-align:center;
+  letter-spacing:6px;
+}
 
+/* ARENA */
 #arena{
-height:260px;
-background:radial-gradient(circle,#553,#221);
-border:2px solid #333;
-position:relative;
+  height:260px;
+  border:2px solid #333;
+  background:
+    radial-gradient(circle at center,#3a3a2a,#111),
+    linear-gradient(180deg,rgba(0,0,0,.4),transparent);
+  position:relative;
+  overflow:hidden;
 }
 
-#ui{margin-top:6px}
-#hand{display:flex;gap:6px;margin-top:6px}
-
+/* UI */
+#stats{margin:6px 0}
+#hand{
+  display:flex;
+  gap:8px;
+}
 .card{
-flex:1;
-background:#111;
-border:1px solid #444;
-padding:6px;
-text-align:center;
-cursor:pointer;
+  flex:1;
+  background:linear-gradient(135deg,#222,#111);
+  border:1px solid #555;
+  padding:8px;
+  border-radius:6px;
+  text-align:center;
+  cursor:pointer;
+  animation:cardIdle 2s infinite;
 }
-.card:hover{background:#8b0000}
-
-button{
-width:100%;
-padding:10px;
-margin-top:6px;
-background:#111;
-color:#fff;
-border:1px solid #333;
+.card.common{border-color:#777}
+.card.rare{border-color:#3af}
+.card.legendary{border-color:#f90}
+.card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 0 14px crimson;
 }
-button:hover{background:#8b0000}
+@keyframes cardIdle{
+  0%{box-shadow:0 0 6px rgba(255,0,0,.2)}
+  50%{box-shadow:0 0 12px rgba(255,0,0,.5)}
+  100%{box-shadow:0 0 6px rgba(255,0,0,.2)}
+}
 
+/* FLOAT TEXT */
 .float{
-position:absolute;
-animation:float 1s forwards;
-font-size:14px;
+  position:absolute;
+  font-size:14px;
+  animation:float 1s forwards;
 }
 @keyframes float{
-from{opacity:1;transform:translateY(0)}
-to{opacity:0;transform:translateY(-30px)}
+  from{opacity:1;transform:translateY(0)}
+  to{opacity:0;transform:translateY(-30px)}
 }
+
+button{
+  width:100%;
+  margin-top:6px;
+  padding:10px;
+  background:#111;
+  color:#fff;
+  border:1px solid #333;
+}
+button:hover{background:#8b0000}
 </style>
 </head>
 
@@ -59,180 +92,195 @@ to{opacity:0;transform:translateY(-30px)}
 <canvas id="c" width="460" height="260"></canvas>
 </div>
 
-<div id="ui">
 <div id="stats"></div>
 <div id="hand"></div>
 <button onclick="openDeck()">DECK</button>
-<button onclick="closeDeck()">BACK</button>
-</div>
 </div>
 
 <script>
-const c=document.getElementById("c"),ctx=c.getContext("2d");
+const c=document.getElementById("c");
+const ctx=c.getContext("2d");
+
+/* ===== AUDIO ===== */
+const audio=new (window.AudioContext||window.webkitAudioContext)();
+function sfx(f,d=.1){
+  let o=audio.createOscillator(),g=audio.createGain();
+  o.frequency.value=f;
+  o.connect(g);g.connect(audio.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+d);
+  o.stop(audio.currentTime+d);
+}
 
 /* ===== CAMPAIGN ===== */
-let campaign={
-episode:1,
-maxEpisode:4
-};
+let campaign={ep:1,max:4};
 
 /* ===== PLAYER ===== */
 let player={
-hp:100,maxHp:100,energy:3,
-deck:[
-{name:"Slash",cost:1,damage:10},
-{name:"Burn Blade",cost:2,damage:8,status:"burn"},
-{name:"Focus",cost:1,heal:8}
-],
-hand:[],
-status:{}
+  hp:100,maxHp:100,energy:3,
+  deck:[
+    {name:"Slash",cost:1,damage:10,rarity:"common"},
+    {name:"Focus",cost:1,heal:8,rarity:"common"},
+    {name:"Burn Blade",cost:2,damage:8,status:"burn",rarity:"rare"}
+  ],
+  hand:[],
+  status:{}
 };
 
 /* ===== ENEMY ===== */
 let enemy={};
 
-/* ===== STATUS LOGIC ===== */
-function applyStatus(target,status){
-target.status[status]=(target.status[status]||0)+2;
-}
-function tickStatus(target){
-for(let s in target.status){
-if(s==="poison"){target.hp-=3;float("-3 ☠️")}
-if(s==="burn"){target.hp-=4;float("-4 🔥")}
-if(s==="stun"){delete target.status[s];return true}
-target.status[s]--;
-if(target.status[s]<=0)delete target.status[s];
-}
-return false;
-}
-
 /* ===== DRAW ===== */
 function draw(){
-ctx.clearRect(0,0,460,260);
+  ctx.clearRect(0,0,460,260);
 
-/* arena */
-ctx.fillStyle="#332";
-ctx.fillRect(0,110,460,80);
+  // Enemy
+  ctx.save();
+  ctx.translate(230,60+Math.sin(Date.now()/400)*3);
+  ctx.fillStyle=enemy.color;
+  ctx.beginPath();
+  ctx.moveTo(-22,22);
+  ctx.lineTo(0,-26);
+  ctx.lineTo(22,22);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 
-/* enemy portrait */
-ctx.fillStyle="#060";
-ctx.beginPath();ctx.arc(230,60,24,0,Math.PI*2);ctx.fill();
+  // Player
+  ctx.save();
+  ctx.translate(230,200+Math.sin(Date.now()/500)*2);
+  ctx.fillStyle="#a00";
+  ctx.beginPath();
+  ctx.arc(0,0,18,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
 
-/* player portrait */
-ctx.fillStyle="#a00";
-ctx.beginPath();ctx.arc(230,200,24,0,Math.PI*2);ctx.fill();
+  // HP bars
+  ctx.fillStyle="red";
+  ctx.fillRect(160,40,(enemy.hp/enemy.maxHp)*140,5);
+  ctx.fillRect(160,225,(player.hp/player.maxHp)*140,5);
+}
 
-/* hp bars */
-ctx.fillStyle="red";
-ctx.fillRect(160,35,(enemy.hp/enemy.maxHp)*140,6);
-ctx.fillRect(160,225,(player.hp/player.maxHp)*140,6);
+/* ===== STATUS ===== */
+function tickStatus(target){
+  for(let s in target.status){
+    if(s==="burn"){target.hp-=4;float("-4 🔥")}
+    if(s==="poison"){target.hp-=3;float("-3 ☠️")}
+    target.status[s]--;
+    if(target.status[s]<=0)delete target.status[s];
+  }
 }
 
 /* ===== CARDS ===== */
 function drawHand(){
-const h=document.getElementById("hand");
-h.innerHTML="";
-player.hand.forEach((c,i)=>{
-let d=document.createElement("div");
-d.className="card";
-d.innerHTML=`${c.name}<br>⚡${c.cost}`;
-d.onclick=()=>playCard(i);
-h.appendChild(d);
-});
-}
-
-/* ===== GAME FLOW ===== */
-function startBattle(){
-enemy=generateEnemy();
-startTurn();
+  const h=document.getElementById("hand");
+  h.innerHTML="";
+  player.hand.forEach((c,i)=>{
+    let d=document.createElement("div");
+    d.className=`card ${c.rarity}`;
+    d.innerHTML=`<b>${c.name}</b><br>⚡${c.cost}`;
+    d.onclick=()=>playCard(i);
+    h.appendChild(d);
+  });
 }
 
 function startTurn(){
-player.energy=3;
-player.hand=[];
-for(let i=0;i<3;i++){
-player.hand.push(player.deck[Math.floor(Math.random()*player.deck.length)]);
-}
-update();
+  player.energy=3;
+  player.hand=[];
+  for(let i=0;i<3;i++){
+    player.hand.push(player.deck[Math.floor(Math.random()*player.deck.length)]);
+  }
+  update();
 }
 
 function playCard(i){
-let card=player.hand[i];
-if(card.cost>player.energy)return;
-player.energy-=card.cost;
+  let c=player.hand[i];
+  if(c.cost>player.energy)return;
+  player.energy-=c.cost;
 
-if(card.damage){
-enemy.hp-=card.damage;
-if(card.status)applyStatus(enemy,card.status);
-float("-"+card.damage);
-}
-if(card.heal){
-player.hp=Math.min(player.maxHp,player.hp+card.heal);
-float("+"+card.heal,"#4f4");
-}
+  if(c.damage){
+    enemy.hp-=c.damage;
+    if(c.status)enemy.status[c.status]=2;
+    float("-"+c.damage,230,60);
+    sfx(200);
+  }
+  if(c.heal){
+    player.hp=Math.min(player.maxHp,player.hp+c.heal);
+    float("+"+c.heal,230,200,"#4f4");
+    sfx(600);
+  }
 
-if(enemy.hp<=0){victory();return;}
-
-enemyTurn();
-startTurn();
+  if(enemy.hp<=0){win();return;}
+  enemyTurn();
+  startTurn();
 }
 
 function enemyTurn(){
-if(tickStatus(enemy))return;
-player.hp-=enemy.damage;
-float("-"+enemy.damage);
+  tickStatus(enemy);
+  player.hp-=enemy.damage;
+  float("-"+enemy.damage,230,200);
+  sfx(120);
 }
 
-/* ===== ENEMY ===== */
-function generateEnemy(){
-let base=campaign.episode*10;
-return{
-hp:60+base,
-maxHp:60+base,
-damage:8+campaign.episode*2,
-status:{}
-};
+/* ===== ENEMY GEN ===== */
+function spawnEnemy(){
+  let base=campaign.ep*15;
+  enemy={
+    hp:70+base,
+    maxHp:70+base,
+    damage:8+campaign.ep*2,
+    color:`hsl(${Math.random()*360},50%,40%)`,
+    status:{}
+  };
 }
 
-/* ===== VICTORY & CAMPAIGN ===== */
-function victory(){
-campaign.episode++;
-if(campaign.episode>campaign.maxEpisode){
-alert("Campaign Complete!");
-campaign.episode=1;
+/* ===== VICTORY ===== */
+function win(){
+  campaign.ep++;
+  if(campaign.ep===2){
+    player.deck.push({name:"Poison Fang",cost:2,damage:6,status:"poison",rarity:"rare"});
+  }
+  if(campaign.ep===3){
+    player.deck.push({name:"Stun Strike",cost:2,damage:5,status:"stun",rarity:"legendary"});
+  }
+  if(campaign.ep>campaign.max){
+    alert("YOU ESCAPED HELL ISLE");
+    campaign.ep=1;
+  }
+  spawnEnemy();
+  startTurn();
 }
-player.hp=player.maxHp;
-startBattle();
-}
-
-/* ===== DECK BUILDER ===== */
-function openDeck(){
-let txt="DECK:\n";
-player.deck.forEach(c=>txt+=c.name+"\n");
-alert(txt);
-}
-function closeDeck(){}
 
 /* ===== UI ===== */
-function float(text,color="#f44"){
-let d=document.createElement("div");
-d.className="float";
-d.style.left="220px";
-d.style.top="130px";
-d.style.color=color;
-d.innerText=text;
-document.getElementById("arena").appendChild(d);
-setTimeout(()=>d.remove(),1000);
-}
-function update(){
-document.getElementById("stats").innerText=
-`EP ${campaign.episode} ❤️ ${player.hp}/${player.maxHp} ⚡ ${player.energy}`;
-draw();drawHand();
+function float(t,x,y,color="#f44"){
+  let d=document.createElement("div");
+  d.className="float";
+  d.style.left=x+"px";
+  d.style.top=y+"px";
+  d.style.color=color;
+  d.innerText=t;
+  document.getElementById("arena").appendChild(d);
+  setTimeout(()=>d.remove(),1000);
 }
 
+function update(){
+  document.getElementById("stats").innerText=
+    `EP ${campaign.ep} ❤️ ${player.hp}/${player.maxHp} ⚡ ${player.energy}`;
+  drawHand();
+  draw();
+}
+
+function openDeck(){
+  alert("DECK:\n"+player.deck.map(c=>c.name).join("\n"));
+}
+
+/* ===== LOOP ===== */
+function loop(){draw();requestAnimationFrame(loop)}
+
 /* ===== START ===== */
-startBattle();
-update();
+spawnEnemy();
+startTurn();
+loop();
 </script>
 </body>
 </html>
