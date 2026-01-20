@@ -7,7 +7,7 @@
 <style>
 body{
   margin:0;
-  background:radial-gradient(circle at center,#111,#000 75%);
+  background:radial-gradient(circle at center,#0f0f0f,#000 70%);
   color:#eee;
   font-family:monospace;
 }
@@ -26,10 +26,13 @@ h1{
   height:260px;
   border:2px solid #333;
   background:
-    radial-gradient(circle at center,#3a3a2a,#111),
-    linear-gradient(180deg,rgba(0,0,0,.4),transparent);
+    linear-gradient(180deg,#2a2a1a,#111);
   position:relative;
   overflow:hidden;
+}
+canvas{
+  width:100%;
+  height:100%;
 }
 
 /* UI */
@@ -46,19 +49,10 @@ h1{
   border-radius:6px;
   text-align:center;
   cursor:pointer;
-  animation:cardIdle 2s infinite;
 }
-.card.common{border-color:#777}
-.card.rare{border-color:#3af}
-.card.legendary{border-color:#f90}
 .card:hover{
   transform:translateY(-6px);
   box-shadow:0 0 14px crimson;
-}
-@keyframes cardIdle{
-  0%{box-shadow:0 0 6px rgba(255,0,0,.2)}
-  50%{box-shadow:0 0 12px rgba(255,0,0,.5)}
-  100%{box-shadow:0 0 6px rgba(255,0,0,.2)}
 }
 
 /* FLOAT TEXT */
@@ -71,16 +65,6 @@ h1{
   from{opacity:1;transform:translateY(0)}
   to{opacity:0;transform:translateY(-30px)}
 }
-
-button{
-  width:100%;
-  margin-top:6px;
-  padding:10px;
-  background:#111;
-  color:#fff;
-  border:1px solid #333;
-}
-button:hover{background:#8b0000}
 </style>
 </head>
 
@@ -89,86 +73,95 @@ button:hover{background:#8b0000}
 <h1>HELL ISLE</h1>
 
 <div id="arena">
-<canvas id="c" width="460" height="260"></canvas>
+  <canvas id="c" width="460" height="260"></canvas>
 </div>
 
 <div id="stats"></div>
 <div id="hand"></div>
-<button onclick="openDeck()">DECK</button>
 </div>
 
 <script>
 const c=document.getElementById("c");
 const ctx=c.getContext("2d");
 
+/* ===== LOAD CHARACTER IMAGE ===== */
+const sprite = new Image();
+sprite.src = "characters.jpg";
+
+const CHAR_COUNT = 10; // we will pick 10 random crops
+let characters = [];
+
+/* Randomly slice characters from image */
+sprite.onload = () => {
+  const size = Math.min(sprite.width, sprite.height) / 4;
+  for(let i=0;i<CHAR_COUNT;i++){
+    characters.push({
+      x: Math.random() * (sprite.width - size),
+      y: Math.random() * (sprite.height - size),
+      w: size,
+      h: size
+    });
+  }
+  startBattle();
+};
+
 /* ===== AUDIO ===== */
 const audio=new (window.AudioContext||window.webkitAudioContext)();
-function sfx(f,d=.1){
-  let o=audio.createOscillator(),g=audio.createGain();
-  o.frequency.value=f;
+function sfx(freq){
+  const o=audio.createOscillator(),g=audio.createGain();
+  o.frequency.value=freq;
   o.connect(g);g.connect(audio.destination);
   o.start();
-  g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+d);
-  o.stop(audio.currentTime+d);
+  g.gain.exponentialRampToValueAtTime(0.0001,audio.currentTime+0.15);
+  o.stop(audio.currentTime+0.15);
 }
 
-/* ===== CAMPAIGN ===== */
-let campaign={ep:1,max:4};
-
-/* ===== PLAYER ===== */
+/* ===== GAME STATE ===== */
 let player={
   hp:100,maxHp:100,energy:3,
   deck:[
-    {name:"Slash",cost:1,damage:10,rarity:"common"},
-    {name:"Focus",cost:1,heal:8,rarity:"common"},
-    {name:"Burn Blade",cost:2,damage:8,status:"burn",rarity:"rare"}
+    {name:"Slash",cost:1,damage:10},
+    {name:"Focus",cost:1,heal:8},
+    {name:"Burn Blade",cost:2,damage:8}
   ],
   hand:[],
-  status:{}
+  sprite:null
 };
 
-/* ===== ENEMY ===== */
-let enemy={};
+let enemy={
+  hp:80,maxHp:80,
+  damage:10,
+  sprite:null
+};
 
 /* ===== DRAW ===== */
 function draw(){
   ctx.clearRect(0,0,460,260);
 
-  // Enemy
-  ctx.save();
-  ctx.translate(230,60+Math.sin(Date.now()/400)*3);
-  ctx.fillStyle=enemy.color;
-  ctx.beginPath();
-  ctx.moveTo(-22,22);
-  ctx.lineTo(0,-26);
-  ctx.lineTo(22,22);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
+  // Enemy sprite (top)
+  if(enemy.sprite){
+    ctx.drawImage(
+      sprite,
+      enemy.sprite.x,enemy.sprite.y,
+      enemy.sprite.w,enemy.sprite.h,
+      170,20,120,120
+    );
+  }
 
-  // Player
-  ctx.save();
-  ctx.translate(230,200+Math.sin(Date.now()/500)*2);
-  ctx.fillStyle="#a00";
-  ctx.beginPath();
-  ctx.arc(0,0,18,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
+  // Player sprite (bottom)
+  if(player.sprite){
+    ctx.drawImage(
+      sprite,
+      player.sprite.x,player.sprite.y,
+      player.sprite.w,player.sprite.h,
+      170,120,120,120
+    );
+  }
 
   // HP bars
   ctx.fillStyle="red";
-  ctx.fillRect(160,40,(enemy.hp/enemy.maxHp)*140,5);
-  ctx.fillRect(160,225,(player.hp/player.maxHp)*140,5);
-}
-
-/* ===== STATUS ===== */
-function tickStatus(target){
-  for(let s in target.status){
-    if(s==="burn"){target.hp-=4;float("-4 🔥")}
-    if(s==="poison"){target.hp-=3;float("-3 ☠️")}
-    target.status[s]--;
-    if(target.status[s]<=0)delete target.status[s];
-  }
+  ctx.fillRect(160,10,(enemy.hp/enemy.maxHp)*140,6);
+  ctx.fillRect(160,246,(player.hp/player.maxHp)*140,6);
 }
 
 /* ===== CARDS ===== */
@@ -177,13 +170,14 @@ function drawHand(){
   h.innerHTML="";
   player.hand.forEach((c,i)=>{
     let d=document.createElement("div");
-    d.className=`card ${c.rarity}`;
+    d.className="card";
     d.innerHTML=`<b>${c.name}</b><br>⚡${c.cost}`;
     d.onclick=()=>playCard(i);
     h.appendChild(d);
   });
 }
 
+/* ===== TURN LOGIC ===== */
 function startTurn(){
   player.energy=3;
   player.hand=[];
@@ -200,86 +194,62 @@ function playCard(i){
 
   if(c.damage){
     enemy.hp-=c.damage;
-    if(c.status)enemy.status[c.status]=2;
-    float("-"+c.damage,230,60);
-    sfx(200);
+    floatText("-"+c.damage,230,80);
+    sfx(180);
   }
   if(c.heal){
     player.hp=Math.min(player.maxHp,player.hp+c.heal);
-    float("+"+c.heal,230,200,"#4f4");
+    floatText("+"+c.heal,230,200,"#4f4");
     sfx(600);
   }
 
-  if(enemy.hp<=0){win();return;}
+  if(enemy.hp<=0){
+    startBattle();
+    return;
+  }
+
   enemyTurn();
   startTurn();
 }
 
 function enemyTurn(){
-  tickStatus(enemy);
   player.hp-=enemy.damage;
-  float("-"+enemy.damage,230,200);
+  floatText("-"+enemy.damage,230,200);
   sfx(120);
 }
 
-/* ===== ENEMY GEN ===== */
-function spawnEnemy(){
-  let base=campaign.ep*15;
-  enemy={
-    hp:70+base,
-    maxHp:70+base,
-    damage:8+campaign.ep*2,
-    color:`hsl(${Math.random()*360},50%,40%)`,
-    status:{}
-  };
-}
-
-/* ===== VICTORY ===== */
-function win(){
-  campaign.ep++;
-  if(campaign.ep===2){
-    player.deck.push({name:"Poison Fang",cost:2,damage:6,status:"poison",rarity:"rare"});
-  }
-  if(campaign.ep===3){
-    player.deck.push({name:"Stun Strike",cost:2,damage:5,status:"stun",rarity:"legendary"});
-  }
-  if(campaign.ep>campaign.max){
-    alert("YOU ESCAPED HELL ISLE");
-    campaign.ep=1;
-  }
-  spawnEnemy();
+/* ===== BATTLE ===== */
+function startBattle(){
+  enemy.hp=enemy.maxHp;
+  enemy.sprite = characters[Math.floor(Math.random()*characters.length)];
+  player.sprite = characters[Math.floor(Math.random()*characters.length)];
   startTurn();
 }
 
 /* ===== UI ===== */
-function float(t,x,y,color="#f44"){
+function update(){
+  document.getElementById("stats").innerText=
+    `❤️ ${player.hp}/${player.maxHp} ⚡ ${player.energy}`;
+  drawHand();
+  draw();
+}
+
+function floatText(text,x,y,color="#f44"){
   let d=document.createElement("div");
   d.className="float";
   d.style.left=x+"px";
   d.style.top=y+"px";
   d.style.color=color;
-  d.innerText=t;
+  d.innerText=text;
   document.getElementById("arena").appendChild(d);
   setTimeout(()=>d.remove(),1000);
 }
 
-function update(){
-  document.getElementById("stats").innerText=
-    `EP ${campaign.ep} ❤️ ${player.hp}/${player.maxHp} ⚡ ${player.energy}`;
-  drawHand();
-  draw();
-}
-
-function openDeck(){
-  alert("DECK:\n"+player.deck.map(c=>c.name).join("\n"));
-}
-
 /* ===== LOOP ===== */
-function loop(){draw();requestAnimationFrame(loop)}
-
-/* ===== START ===== */
-spawnEnemy();
-startTurn();
+function loop(){
+  draw();
+  requestAnimationFrame(loop);
+}
 loop();
 </script>
 </body>
