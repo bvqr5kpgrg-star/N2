@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>N2 – Brain Training (Patched)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#020617;
+  --panel:#020a1c;
+  --accent:#00eaff;
+  --accent2:#a855f7;
+  --text:#e6faff;
+}
+
+*{box-sizing:border-box;font-family:Segoe UI,sans-serif}
+
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#041b3d,#020617);
+  color:var(--text);
+  min-height:100vh;
+}
+
+.app{max-width:420px;margin:auto;padding:16px}
+header{text-align:center;margin-bottom:20px}
+
+.logo{
+  font-size:48px;font-weight:900;letter-spacing:6px;
+  color:var(--accent);text-shadow:0 0 25px var(--accent);
+}
+
+.card{
+  background:linear-gradient(180deg,#020a1c,#020617);
+  border-radius:18px;padding:16px;margin-bottom:16px;
+  box-shadow:0 0 35px rgba(0,234,255,.15);
+}
+
+button{
+  width:100%;padding:12px;margin-top:10px;
+  border:none;border-radius:14px;
+  font-size:16px;font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  cursor:pointer;color:#020617;
+}
+
+button.outline{
+  background:transparent;color:var(--accent);
+  border:1px solid var(--accent);
+}
+
+input{
+  width:100%;padding:12px;margin-top:12px;
+  border-radius:12px;border:none;font-size:16px;
+}
+
+.stats{
+  display:flex;justify-content:space-between;font-size:14px
+}
+
+.timer{text-align:center;margin:8px 0;color:var(--accent)}
+.question{text-align:center;font-size:22px;margin:16px 0;min-height:32px}
+.feedback{text-align:center;margin-top:10px;font-size:14px}
+.hidden{display:none}
+.topbar{text-align:center;font-size:13px;opacity:.85}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+  <div class="logo">N2</div>
+  <div class="topbar">
+    🏆 High Score: <b id="highScore">0</b> |
+    🔥 Combo: <b id="combo">0</b>
+  </div>
+</header>
+
+<div id="menu" class="card">
+  <button onclick="startGame('logic')">🔢 Logic</button>
+  <button onclick="startGame('math')">➕ Math</button>
+  <button onclick="startGame('word')">🔤 Words</button>
+</div>
+
+<div id="game" class="card hidden">
+  <div class="stats">
+    <span>Score: <b id="score">0</b></span>
+    <span>Level: <b id="level">1</b></span>
+  </div>
+
+  <div class="timer">⏱ <span id="time">10</span>s</div>
+  <div class="question" id="question">Loading...</div>
+
+  <input id="answer" placeholder="Your answer">
+  <button onclick="submitAnswer()">Submit</button>
+  <button id="retryBtn" class="outline hidden" onclick="nextQuestion()">Next</button>
+  <div class="feedback" id="feedback"></div>
+  <button class="outline" onclick="exitGame()">Exit</button>
+</div>
+
+</div>
+
+<script>
+let mode="", score=0, level=1, combo=0;
+let time=10, timer=null, correctAnswer="";
+let highScore=Number(localStorage.getItem("n2HighScore")||0);
+
+const words=["FOCUS","NUMBER","PUZZLE","MEMORY","LOGIC","BRAIN"];
+const ctx=new (window.AudioContext||window.webkitAudioContext)();
+
+highScoreEl.textContent=highScore;
+
+function beep(freq,dur){
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.frequency.value=freq;
+  o.connect(g); g.connect(ctx.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur/1000);
+  o.stop(ctx.currentTime+dur/1000);
+}
+
+function startGame(m){
+  mode=m;
+  score=0; level=1; combo=0;
+  menu.classList.add("hidden");
+  game.classList.remove("hidden");
+  updateStats();
+  nextQuestion();
+}
+
+function exitGame(){
+  clearInterval(timer);
+  game.classList.add("hidden");
+  menu.classList.remove("hidden");
+}
+
+function updateStats(){
+  scoreEl.textContent=score;
+  levelEl.textContent=level;
+  comboEl.textContent=combo;
+}
+
+function startTimer(){
+  clearInterval(timer);
+  time=Math.max(5,10-level);
+  timeEl.textContent=time;
+  timer=setInterval(()=>{
+    time--;
+    timeEl.textContent=time;
+    if(time<=0) wrong();
+  },1000);
+}
+
+function nextQuestion(){
+  retryBtn.classList.add("hidden");
+  feedback.textContent="";
+  answer.value="";
+  startTimer();
+  if(mode==="logic") logic();
+  if(mode==="math") math();
+  if(mode==="word") word();
+}
+
+function logic(){
+  let n=Math.floor(Math.random()*level)+2;
+  correctAnswer=String(n*n);
+  question.textContent=`${n}² = ?`;
+}
+
+function math(){
+  let a=Math.floor(Math.random()*(10+level))+1;
+  let b=Math.floor(Math.random()*(10+level))+1;
+  correctAnswer=String(a+b);
+  question.textContent=`${a} + ${b} = ?`;
+}
+
+function word(){
+  let w=words[Math.floor(Math.random()*words.length)];
+  correctAnswer=w;
+  question.textContent=`Unscramble: ${w.split("").sort(()=>0.5-Math.random()).join("")}`;
+}
+
+function submitAnswer(){
+  let user=answer.value.trim().toUpperCase();
+  if(user===correctAnswer){
+    beep(900,150);
+    combo++;
+    score+=1+combo;
+    level++;
+    updateStats();
+    nextQuestion();
+  }else{
+    wrong();
+  }
+}
+
+function wrong(){
+  clearInterval(timer);
+  beep(200,400);
+  combo=0;
+  updateStats();
+  feedback.innerHTML=`❌ Correct answer: <b>${correctAnswer}</b>`;
+  retryBtn.classList.remove("hidden");
+
+  if(score>highScore){
+    highScore=score;
+    localStorage.setItem("n2HighScore",highScore);
+    highScoreEl.textContent=highScore;
+  }
+}
+</script>
+
+</body>
+</html>
