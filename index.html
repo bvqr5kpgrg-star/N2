@@ -1,326 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>HELL ISLE</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Island Cinema Empire</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-/* ===================== THEME ===================== */
-:root{
-  --bg:#050505;
-  --panel:#0e0e0e;
-  --ink:#eaeaea;
-  --accent:#c62828;
-  --rare:#3fa9f5;
-  --legend:#f6a623;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background:radial-gradient(circle at center,#141414,#000 70%);
-  color:var(--ink);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,monospace;
-}
-#game{
-  max-width:520px;
-  margin:auto;
-  padding:10px;
-}
-h1{
-  text-align:center;
-  letter-spacing:6px;
-  margin:8px 0 10px;
+body {
+  margin: 0;
+  font-family: system-ui, Arial;
+  background: linear-gradient(#0b3c5d, #0e6ba8);
+  color: #fff;
+  text-align: center;
 }
 
-/* ===================== ARENA ===================== */
-#arena{
-  position:relative;
-  height:280px;
-  border:2px solid #2b2b2b;
-  border-radius:10px;
-  overflow:hidden;
-  background:
-    radial-gradient(ellipse at center,#3a3a2a 0%,#141414 60%,#0b0b0b 100%);
+header {
+  padding: 12px;
+  background: rgba(0,0,0,.4);
+  font-weight: bold;
 }
-#arena::before{
-  content:"";
-  position:absolute; inset:0;
-  background:
-    linear-gradient(180deg,rgba(0,0,0,.35),transparent 40%),
-    radial-gradient(circle at 50% 80%,rgba(255,255,255,.06),transparent 45%);
-  pointer-events:none;
-}
-canvas{width:100%;height:100%}
 
-/* ===================== UI ===================== */
-#stats{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:8px 0;
-  font-size:14px;
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 10px;
 }
-#hand{
-  display:flex;
-  gap:8px;
-}
-.card{
-  flex:1;
-  padding:8px;
-  border-radius:10px;
-  border:1px solid #444;
-  background:linear-gradient(135deg,#1a1a1a,#0f0f0f);
-  text-align:center;
-  cursor:pointer;
-  user-select:none;
-  transition:.15s transform,.15s box-shadow,.15s border-color;
-  animation:idle 2s infinite;
-}
-.card.common{border-color:#666}
-.card.rare{border-color:var(--rare)}
-.card.legendary{border-color:var(--legend)}
-.card:hover{
-  transform:translateY(-6px) scale(1.02);
-  box-shadow:0 10px 24px rgba(198,40,40,.35);
-}
-@keyframes idle{
-  0%{box-shadow:0 0 8px rgba(255,0,0,.12)}
-  50%{box-shadow:0 0 16px rgba(255,0,0,.35)}
-  100%{box-shadow:0 0 8px rgba(255,0,0,.12)}
-}
-button{
-  width:100%;
-  margin-top:8px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#111;
-  color:#fff;
-}
-button:hover{background:#1b1b1b}
 
-/* ===================== FLOAT ===================== */
-.float{
-  position:absolute;
-  font-weight:700;
-  pointer-events:none;
-  animation:float 1s forwards;
+.card {
+  background: rgba(255,255,255,.1);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px;
 }
-@keyframes float{
-  from{opacity:1;transform:translateY(0)}
-  to{opacity:0;transform:translateY(-28px)}
+
+button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.collect {
+  background: #00ffcc;
+}
+
+.upgrade {
+  background: #ffd166;
+}
+
+.island {
+  margin: 20px auto;
+  width: 90%;
+  height: 200px;
+  background: linear-gradient(#1dd3b0, #affc41);
+  border-radius: 20px;
+  position: relative;
+}
+
+.cinema {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 80px;
+  background: #111;
+  border-radius: 10px;
+}
+
+.customer {
+  position: absolute;
+  bottom: 10px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  animation: walk 6s linear infinite;
+}
+
+@keyframes walk {
+  from { left: 0; }
+  to { left: 90%; }
 }
 </style>
 </head>
 
 <body>
-<div id="game">
-  <h1>HELL ISLE</h1>
-  <div id="arena"><canvas id="c" width="500" height="280"></canvas></div>
-  <div id="stats">
-    <div id="left"></div>
-    <div id="right"></div>
-  </div>
-  <div id="hand"></div>
-  <button onclick="openDeck()">DECK</button>
+
+<header>🎬 Island Cinema Empire</header>
+
+<div class="stats">
+  <div>💰 Cash: <span id="cash">0</span></div>
+  <div>⭐ Reputation: <span id="rep">0</span></div>
+</div>
+
+<div class="island">
+  <div class="cinema"></div>
+  <div class="customer"></div>
+</div>
+
+<div class="card">
+  <h3>Collect Earnings</h3>
+  <button class="collect" onclick="collect()">Collect 💵</button>
+</div>
+
+<div class="card">
+  <h3>Upgrades</h3>
+  <p>Ticket Counter Lv <span id="ticketLv">1</span></p>
+  <button class="upgrade" onclick="upgradeTicket()">Upgrade (💰 <span id="ticketCost">100</span>)</button>
 </div>
 
 <script>
-/* ===================== ASSETS ===================== */
-const sprite = new Image();
-sprite.src = "characters.jpg"; // must exist next to index.html
+let cash = Number(localStorage.cash) || 500;
+let reputation = Number(localStorage.rep) || 0;
+let ticketLevel = Number(localStorage.ticketLv) || 1;
+let incomePerCollect = 10 * ticketLevel;
+let ticketCost = 100 * ticketLevel;
 
-/* ===================== AUDIO ===================== */
-const AC = new (window.AudioContext||window.webkitAudioContext)();
-function sfx(freq=220,dur=.12){
-  const o=AC.createOscillator(), g=AC.createGain();
-  o.frequency.value=freq; o.connect(g); g.connect(AC.destination);
-  o.start();
-  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+dur);
-  o.stop(AC.currentTime+dur);
+function updateUI() {
+  document.getElementById("cash").innerText = cash;
+  document.getElementById("rep").innerText = reputation;
+  document.getElementById("ticketLv").innerText = ticketLevel;
+  document.getElementById("ticketCost").innerText = ticketCost;
 }
 
-/* ===================== CANVAS ===================== */
-const c=document.getElementById("c");
-const ctx=c.getContext("2d");
-
-/* ===================== GAME DATA ===================== */
-const EP_MAX=4;
-let episode=1;
-
-const CARDS_ALL=[
-  {name:"Slash",cost:1,damage:10,rarity:"common"},
-  {name:"Focus",cost:1,heal:8,rarity:"common"},
-  {name:"Burn Blade",cost:2,damage:8,status:"burn",rarity:"rare"},
-  {name:"Poison Fang",cost:2,damage:6,status:"poison",rarity:"rare"},
-  {name:"Stun Strike",cost:2,damage:5,status:"stun",rarity:"legendary"},
-];
-
-let player={
-  hp:100,maxHp:100,energy:3,
-  deck:[CARDS_ALL[0],CARDS_ALL[1],CARDS_ALL[2]],
-  hand:[],
-  status:{},
-  sprite:null
-};
-let enemy={
-  hp:80,maxHp:80,damage:10,status:{},sprite:null
-};
-
-const CHAR_COUNT=10;
-let cuts=[];
-
-/* ===================== INIT CHAR CUTS ===================== */
-sprite.onload=()=>{
-  const s=Math.min(sprite.width,sprite.height)/4;
-  for(let i=0;i<CHAR_COUNT;i++){
-    cuts.push({
-      x:Math.random()*(sprite.width-s),
-      y:Math.random()*(sprite.height-s),
-      w:s,h:s
-    });
-  }
-  spawn();
-  startTurn();
-  loop();
-};
-
-/* ===================== DRAW ===================== */
-function draw(){
-  ctx.clearRect(0,0,c.width,c.height);
-
-  // enemy
-  if(enemy.sprite){
-    ctx.save();
-    ctx.translate(250,60+Math.sin(Date.now()/350)*2);
-    ctx.drawImage(sprite,enemy.sprite.x,enemy.sprite.y,enemy.sprite.w,enemy.sprite.h,-50,-50,100,100);
-    ctx.restore();
-  }
-  // player
-  if(player.sprite){
-    ctx.save();
-    ctx.translate(250,205+Math.sin(Date.now()/420)*2);
-    ctx.drawImage(sprite,player.sprite.x,player.sprite.y,player.sprite.w,player.sprite.h,-50,-50,100,100);
-    ctx.restore();
-  }
-
-  // bars
-  ctx.fillStyle="#c62828";
-  ctx.fillRect(180,20,(enemy.hp/enemy.maxHp)*140,6);
-  ctx.fillRect(180,255,(player.hp/player.maxHp)*140,6);
+function collect() {
+  cash += incomePerCollect;
+  reputation += 1;
+  save();
+  updateUI();
 }
 
-/* ===================== UI ===================== */
-function ui(){
-  document.getElementById("left").textContent =
-    `EP ${episode}  ❤️ ${player.hp}/${player.maxHp}  ⚡ ${player.energy}`;
-  document.getElementById("right").textContent =
-    `Enemy ${enemy.hp}/${enemy.maxHp}`;
-  drawHand();
-}
-
-function drawHand(){
-  const h=document.getElementById("hand");
-  h.innerHTML="";
-  player.hand.forEach((cd,i)=>{
-    const d=document.createElement("div");
-    d.className=`card ${cd.rarity}`;
-    d.innerHTML=`<b>${cd.name}</b><br>⚡${cd.cost}`;
-    d.onclick=()=>play(i);
-    h.appendChild(d);
-  });
-}
-
-/* ===================== FLOAT ===================== */
-function float(t,x,y,col="#ff5252"){
-  const d=document.createElement("div");
-  d.className="float";
-  d.style.left=x+"px";
-  d.style.top=y+"px";
-  d.style.color=col;
-  d.textContent=t;
-  document.getElementById("arena").appendChild(d);
-  setTimeout(()=>d.remove(),1000);
-}
-
-/* ===================== STATUS ===================== */
-function tick(target){
-  for(const k in target.status){
-    if(k==="burn"){target.hp-=4; float("-4 🔥",250,70)}
-    if(k==="poison"){target.hp-=3; float("-3 ☠️",250,70)}
-    target.status[k]--;
-    if(target.status[k]<=0) delete target.status[k];
+function upgradeTicket() {
+  if (cash >= ticketCost) {
+    cash -= ticketCost;
+    ticketLevel++;
+    incomePerCollect = 10 * ticketLevel;
+    ticketCost = 100 * ticketLevel;
+    save();
+    updateUI();
+  } else {
+    alert("Not enough cash!");
   }
 }
 
-/* ===================== TURNS ===================== */
-function startTurn(){
-  player.energy=3;
-  player.hand=[];
-  for(let i=0;i<3;i++){
-    player.hand.push(player.deck[Math.floor(Math.random()*player.deck.length)]);
-  }
-  ui();
+function save() {
+  localStorage.cash = cash;
+  localStorage.rep = reputation;
+  localStorage.ticketLv = ticketLevel;
 }
 
-function play(i){
-  const cd=player.hand[i];
-  if(cd.cost>player.energy) return;
-  player.energy-=cd.cost;
+updateUI();
 
-  if(cd.damage){
-    enemy.hp-=cd.damage;
-    if(cd.status) enemy.status[cd.status]=(enemy.status[cd.status]||0)+2;
-    float("-"+cd.damage,250,70);
-    sfx(180);
-  }
-  if(cd.heal){
-    player.hp=Math.min(player.maxHp,player.hp+cd.heal);
-    float("+"+cd.heal,250,205,"#4caf50");
-    sfx(520);
-  }
-  if(enemy.hp<=0){win(); return;}
-
-  enemyTurn();
-  startTurn();
-}
-
-function enemyTurn(){
-  tick(enemy);
-  player.hp-=enemy.damage;
-  float("-"+enemy.damage,250,205);
-  sfx(120);
-}
-
-/* ===================== SPAWN / PROGRESS ===================== */
-function spawn(){
-  enemy.maxHp=70+episode*18;
-  enemy.hp=enemy.maxHp;
-  enemy.damage=8+episode*2;
-  enemy.status={};
-  enemy.sprite=cuts[Math.floor(Math.random()*cuts.length)];
-  player.sprite=cuts[Math.floor(Math.random()*cuts.length)];
-}
-
-function win(){
-  episode++;
-  if(episode===2) player.deck.push(CARDS_ALL[3]);
-  if(episode===3) player.deck.push(CARDS_ALL[4]);
-  if(episode>EP_MAX){
-    alert("YOU ESCAPED HELL ISLE");
-    episode=1;
-  }
-  spawn();
-  startTurn();
-}
-
-/* ===================== DECK ===================== */
-function openDeck(){
-  alert("DECK\n\n"+player.deck.map(c=>`${c.name} (${c.rarity})`).join("\n"));
-}
-
-/* ===================== LOOP ===================== */
-function loop(){ draw(); requestAnimationFrame(loop); }
+// Idle income
+setInterval(() => {
+  cash += ticketLevel;
+  save();
+  updateUI();
+}, 3000);
 </script>
+
 </body>
 </html>
