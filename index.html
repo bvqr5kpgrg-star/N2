@@ -1,96 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Anti Doomscroll Test</title>
+<meta charset="UTF-8" />
+<title>Anti Doomscroll – Face & Eye Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   margin: 0;
-  font-family: system-ui;
   background: #0a0f1f;
-  color: #fff;
-  overflow-y: scroll;
+  color: #00ffcc;
+  font-family: system-ui;
+  text-align: center;
 }
 
-.feed {
+video, canvas {
+  width: 100vw;
   height: 100vh;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-.card {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  border-bottom: 1px solid #222;
-}
-
-.overlay {
+#status {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.overlay button {
-  padding: 12px 20px;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 8px;
-  background: #00ffcc;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 10;
 }
 </style>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 </head>
 
 <body>
 
-<div class="feed" id="feed">
-  <div class="card">Scroll 😵‍💫</div>
-  <div class="card">Still Scrolling…</div>
-  <div class="card">Brain Rot Zone</div>
-  <div class="card">One More Scroll?</div>
-  <div class="card">STOP 🛑</div>
-</div>
-
-<div class="overlay" id="lock">
-  <h1>Stop Doomscrolling</h1>
-  <p>You’ve been scrolling too long</p>
-  <button onclick="unlock()">I’m Aware</button>
-</div>
+<video id="video" autoplay muted playsinline></video>
+<canvas id="canvas"></canvas>
+<div id="status">Requesting camera…</div>
 
 <script>
-let scrollTimer = 0;
-let scrolling = false;
-const LIMIT = 10; // seconds
-const lock = document.getElementById("lock");
+const videoElement = document.getElementById("video");
+const canvasElement = document.getElementById("canvas");
+const canvasCtx = canvasElement.getContext("2d");
+const statusText = document.getElementById("status");
 
-window.addEventListener("scroll", () => {
-  scrolling = true;
+canvasElement.width = window.innerWidth;
+canvasElement.height = window.innerHeight;
+
+const faceMesh = new FaceMesh({
+  locateFile: (file) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
 });
 
-setInterval(() => {
-  if (scrolling) {
-    scrollTimer++;
-    scrolling = false;
+faceMesh.setOptions({
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6,
+});
 
-    if (scrollTimer >= LIMIT) {
-      document.body.style.overflow = "hidden";
-      lock.style.display = "flex";
+faceMesh.onResults(results => {
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    statusText.innerText = "👀 Face Detected – Tracking Eyes";
+
+    for (const landmarks of results.multiFaceLandmarks) {
+
+      // Draw eyes only
+      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, {color: "#00ffcc"});
+      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, {color: "#00ffcc"});
+
+      // Draw pupils
+      drawLandmarks(canvasCtx, landmarks, {
+        color: "#ff0044",
+        radius: 1
+      });
     }
-  }
-}, 1000);
 
-function unlock() {
-  scrollTimer = 0;
-  document.body.style.overflow = "auto";
-  lock.style.display = "none";
-}
+  } else {
+    statusText.innerText = "⚠️ No face detected – Look at screen";
+  }
+});
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await faceMesh.send({ image: videoElement });
+  },
+  width: 640,
+  height: 480,
+});
+
+camera.start();
 </script>
 
 </body>
