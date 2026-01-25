@@ -2,236 +2,95 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>N2 – Neon Budget Planner</title>
+<title>Anti Doomscroll Test</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root{
-    --neon:#00e5ff;
-    --bg:#020612;
-    --card:#0c1633;
+body {
+  margin: 0;
+  font-family: system-ui;
+  background: #0a0f1f;
+  color: #fff;
+  overflow-y: scroll;
 }
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:radial-gradient(circle at top,#091840,#02040a);
-    color:#e6f7ff;
-    padding:15px;
+
+.feed {
+  height: 100vh;
 }
-h1,h3{text-align:center;color:var(--neon);text-shadow:0 0 10px var(--neon);}
-.container{
-    max-width:1000px;
-    margin:auto;
-    background:rgba(12,22,51,0.95);
-    padding:20px;
-    border-radius:16px;
-    box-shadow:0 0 35px rgba(0,229,255,0.2);
+
+.card {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  border-bottom: 1px solid #222;
 }
-input,select,button{
-    width:100%;
-    padding:10px;
-    margin-top:8px;
-    border-radius:10px;
-    border:none;
-    background:#081226;
-    color:#fff;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
 }
-button{
-    background:var(--neon);
-    color:#000;
-    font-weight:bold;
+
+.overlay button {
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: #00ffcc;
 }
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-    gap:12px;
-}
-.card{
-    background:var(--card);
-    padding:15px;
-    border-radius:12px;
-    text-align:center;
-    box-shadow:0 0 15px rgba(0,229,255,0.15);
-}
-.progress{
-    background:#020617;
-    border-radius:20px;
-    overflow:hidden;
-    margin-top:6px;
-}
-.progress div{
-    height:12px;
-    background:linear-gradient(90deg,#00e5ff,#6affff);
-    box-shadow:0 0 10px var(--neon);
-    width:0%;
-    transition:0.4s;
-}
-ul{list-style:none;padding:0;}
-li{
-    background:#081226;
-    padding:10px;
-    margin-top:6px;
-    border-radius:10px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-.small{
-    background:#ff6b6b;
-    padding:4px 8px;
-    border-radius:6px;
-    font-size:12px;
-}
-.expense{color:#ff6b6b;}
-.income{color:#6bff95;}
-.saving{color:#ffd56b;}
 </style>
 </head>
 
 <body>
 
-<h1>N2 – Neon Budget Planner</h1>
-
-<div class="container">
-
-<input type="month" id="month">
-
-<h3>Salary</h3>
-<input type="number" id="salary">
-
-<h3>Planned Saving</h3>
-<input type="number" id="plan">
-
-<h3>Overview</h3>
-<div class="grid">
-    <div class="card"><h4>Income</h4><p id="income">0</p></div>
-    <div class="card"><h4>Expense</h4><p id="expense">0</p></div>
-    <div class="card"><h4>Saving</h4><p id="saving">0</p></div>
-    <div class="card"><h4>Remaining</h4><p id="remain">0</p></div>
+<div class="feed" id="feed">
+  <div class="card">Scroll 😵‍💫</div>
+  <div class="card">Still Scrolling…</div>
+  <div class="card">Brain Rot Zone</div>
+  <div class="card">One More Scroll?</div>
+  <div class="card">STOP 🛑</div>
 </div>
 
-<h3>Expense vs Income</h3>
-<div class="progress"><div id="expenseBar"></div></div>
-
-<h3>Saving Progress</h3>
-<div class="progress"><div id="savingBar"></div></div>
-
-<h3>Add Transaction</h3>
-<input id="title" placeholder="Title">
-<input id="amount" type="number" placeholder="Amount">
-<select id="type">
-    <option value="expense">Expense</option>
-    <option value="income">Income</option>
-    <option value="saving">Saving</option>
-</select>
-
-<select id="category">
-    <option>Food</option>
-    <option>Rent</option>
-    <option>Travel</option>
-    <option>Bills</option>
-    <option>Entertainment</option>
-    <option>Other</option>
-</select>
-
-<button onclick="add()">Add</button>
-
-<h3>Category Breakdown (Expenses)</h3>
-<div id="categories"></div>
-
-<h3>Transactions</h3>
-<ul id="list"></ul>
-
+<div class="overlay" id="lock">
+  <h1>Stop Doomscrolling</h1>
+  <p>You’ve been scrolling too long</p>
+  <button onclick="unlock()">I’m Aware</button>
 </div>
 
 <script>
-const month=document.getElementById("month");
-month.value=new Date().toISOString().slice(0,7);
+let scrollTimer = 0;
+let scrolling = false;
+const LIMIT = 10; // seconds
+const lock = document.getElementById("lock");
 
-const key=()=>`n2_${month.value}`;
-const load=()=>JSON.parse(localStorage.getItem(key()))||{salary:0,plan:0,t:[]};
-const save=d=>localStorage.setItem(key(),JSON.stringify(d));
+window.addEventListener("scroll", () => {
+  scrolling = true;
+});
 
-function update(){
-    const d=load();
-    d.salary=+salary.value||0;
-    d.plan=+plan.value||0;
+setInterval(() => {
+  if (scrolling) {
+    scrollTimer++;
+    scrolling = false;
 
-    let inc=d.salary,exp=0,sav=d.plan;
-    let cat={};
+    if (scrollTimer >= LIMIT) {
+      document.body.style.overflow = "hidden";
+      lock.style.display = "flex";
+    }
+  }
+}, 1000);
 
-    d.t.forEach(x=>{
-        if(x.type==="expense"){
-            exp+=x.amount;
-            cat[x.category]=(cat[x.category]||0)+x.amount;
-        }
-        if(x.type==="income")inc+=x.amount;
-        if(x.type==="saving")sav+=x.amount;
-    });
-
-    income.textContent=inc;
-    expense.textContent=exp;
-    saving.textContent=sav;
-    remain.textContent=inc-exp-sav;
-
-    expenseBar.style.width=Math.min(100,(exp/inc)*100||0)+"%";
-    savingBar.style.width=Math.min(100,(sav/(d.plan||1))*100)+"%";
-
-    list.innerHTML="";
-    d.t.forEach((x,i)=>{
-        list.innerHTML+=`
-        <li class="${x.type}">
-            <span contenteditable oninput="edit(${i},'title',this.innerText)">${x.title}</span>
-            <span contenteditable oninput="edit(${i},'amount',this.innerText)">${x.amount}</span>
-            <small>${x.category||""}</small>
-            <button class="small" onclick="del(${i})">X</button>
-        </li>`;
-    });
-
-    categories.innerHTML="";
-    Object.keys(cat).forEach(c=>{
-        const p=(cat[c]/exp)*100||0;
-        categories.innerHTML+=`
-        <div class="card">
-            <h4>${c} – ${cat[c]}</h4>
-            <div class="progress"><div style="width:${p}%"></div></div>
-        </div>`;
-    });
-
-    save(d);
+function unlock() {
+  scrollTimer = 0;
+  document.body.style.overflow = "auto";
+  lock.style.display = "none";
 }
-
-function add(){
-    const d=load();
-    d.t.push({
-        title:title.value,
-        amount:+amount.value,
-        type:type.value,
-        category:category.value
-    });
-    title.value="";amount.value="";
-    save(d);update();
-}
-
-function edit(i,f,v){
-    const d=load();
-    d.t[i][f]=f==="amount"?+v:v;
-    save(d);update();
-}
-function del(i){
-    const d=load();
-    d.t.splice(i,1);
-    save(d);update();
-}
-
-month.onchange=()=>{
-    const d=load();
-    salary.value=d.salary;
-    plan.value=d.plan;
-    update();
-};
-salary.oninput=plan.oninput=update;
-month.onchange();
 </script>
 
 </body>
