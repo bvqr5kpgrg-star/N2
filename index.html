@@ -1,108 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Anti Doomscroll – Face & Eye Tracker</title>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  margin: 0;
-  background: #0a0f1f;
-  color: #00ffcc;
-  font-family: system-ui;
-  text-align: center;
-}
-
-video, canvas {
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-#status {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.7);
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-size: 14px;
-  z-index: 10;
-}
-</style>
-
-<!-- MediaPipe -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<title>Personal Operating System</title>
 </head>
 
 <body>
+<h1>Personal Operating System</h1>
 
-<video id="video" autoplay muted playsinline></video>
-<canvas id="canvas"></canvas>
-<div id="status">Requesting camera…</div>
+<nav>
+  <button onclick="showTab('tasks')">Tasks</button>
+  <button onclick="showTab('planner')">Planner</button>
+  <button onclick="showTab('habits')">Habits</button>
+  <button onclick="showTab('health')">Health</button>
+  <button onclick="showTab('finance')">Finance</button>
+</nav>
+
+<section id="tasks">
+  <h2>Tasks</h2>
+  <input id="taskInput" placeholder="New task">
+  <button onclick="addTask()">Add</button>
+  <ul id="taskList"></ul>
+</section>
+
+<section id="planner" style="display:none">
+  <h2>Planner</h2>
+  <textarea id="dailyPlan" placeholder="Daily plan"></textarea>
+  <button onclick="savePlanner()">Save</button>
+</section>
+
+<section id="habits" style="display:none">
+  <h2>Habits</h2>
+  <input id="habitInput" placeholder="New habit">
+  <button onclick="addHabit()">Add</button>
+  <ul id="habitList"></ul>
+</section>
+
+<section id="health" style="display:none">
+  <h2>Health</h2>
+  <input id="water" placeholder="Water">
+  <input id="sleep" placeholder="Sleep">
+  <button onclick="saveHealth()">Save</button>
+</section>
+
+<section id="finance" style="display:none">
+  <h2>Finance</h2>
+  <select id="finType">
+    <option>Income</option>
+    <option>Expense</option>
+    <option>Saving</option>
+  </select>
+  <input id="finAmount" type="number" placeholder="Amount">
+  <button onclick="addFinance()">Add</button>
+  <ul id="financeList"></ul>
+</section>
 
 <script>
-const videoElement = document.getElementById("video");
-const canvasElement = document.getElementById("canvas");
-const canvasCtx = canvasElement.getContext("2d");
-const statusText = document.getElementById("status");
+const STORAGE_KEY = "PERSONAL_OS_V1";
 
-canvasElement.width = window.innerWidth;
-canvasElement.height = window.innerHeight;
+function loadState(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+    tasks: [],
+    planner: {},
+    habits: [],
+    health: {},
+    finance: []
+  };
+}
 
-const faceMesh = new FaceMesh({
-  locateFile: (file) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
-});
+function saveState(state){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
 
-faceMesh.setOptions({
-  maxNumFaces: 1,
-  refineLandmarks: true,
-  minDetectionConfidence: 0.6,
-  minTrackingConfidence: 0.6,
-});
+function showTab(id){
+  document.querySelectorAll("section").forEach(s => s.style.display = "none");
+  document.getElementById(id).style.display = "block";
+}
 
-faceMesh.onResults(results => {
-  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+/* TASKS */
+function addTask(){
+  const state = loadState();
+  const text = taskInput.value;
+  if(!text) return;
+  state.tasks.push({ text, done:false });
+  saveState(state);
+  taskInput.value = "";
+  renderTasks();
+}
 
-  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-    statusText.innerText = "👀 Face Detected – Tracking Eyes";
+function renderTasks(){
+  const state = loadState();
+  taskList.innerHTML = "";
+  state.tasks.forEach((t,i)=>{
+    const li = document.createElement("li");
+    li.textContent = t.done ? "✔ " + t.text : t.text;
+    li.onclick = ()=>{
+      state.tasks[i].done = !state.tasks[i].done;
+      saveState(state);
+      renderTasks();
+    };
+    taskList.appendChild(li);
+  });
+}
 
-    for (const landmarks of results.multiFaceLandmarks) {
+/* PLANNER */
+function savePlanner(){
+  const state = loadState();
+  state.planner.daily = dailyPlan.value;
+  saveState(state);
+}
 
-      // Draw eyes only
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, {color: "#00ffcc"});
-      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, {color: "#00ffcc"});
+/* HABITS */
+function addHabit(){
+  const state = loadState();
+  const name = habitInput.value;
+  if(!name) return;
+  state.habits.push({ name, streak:0 });
+  saveState(state);
+  habitInput.value = "";
+  renderHabits();
+}
 
-      // Draw pupils
-      drawLandmarks(canvasCtx, landmarks, {
-        color: "#ff0044",
-        radius: 1
-      });
-    }
+function renderHabits(){
+  const state = loadState();
+  habitList.innerHTML = "";
+  state.habits.forEach((h,i)=>{
+    const li = document.createElement("li");
+    li.innerHTML = `${h.name} (${h.streak}) <button onclick="incHabit(${i})">+</button>`;
+    habitList.appendChild(li);
+  });
+}
 
-  } else {
-    statusText.innerText = "⚠️ No face detected – Look at screen";
-  }
-});
+function incHabit(i){
+  const state = loadState();
+  state.habits[i].streak++;
+  saveState(state);
+  renderHabits();
+}
 
-const camera = new Camera(videoElement, {
-  onFrame: async () => {
-    await faceMesh.send({ image: videoElement });
-  },
-  width: 640,
-  height: 480,
-});
+/* HEALTH */
+function saveHealth(){
+  const state = loadState();
+  state.health = { water: water.value, sleep: sleep.value };
+  saveState(state);
+}
 
-camera.start();
+/* FINANCE */
+function addFinance(){
+  const state = loadState();
+  const amt = Number(finAmount.value);
+  if(!amt) return;
+  state.finance.push({ type: finType.value, amount: amt });
+  saveState(state);
+  finAmount.value = "";
+  renderFinance();
+}
+
+function renderFinance(){
+  const state = loadState();
+  financeList.innerHTML = "";
+  state.finance.forEach(f=>{
+    const li = document.createElement("li");
+    li.textContent = `${f.type}: ${f.amount}`;
+    financeList.appendChild(li);
+  });
+}
+
+renderTasks();
+renderHabits();
+renderFinance();
 </script>
 
 </body>
