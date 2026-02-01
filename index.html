@@ -1,1511 +1,1338 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>N2 — Brain Training</title>
-  <meta name="theme-color" content="#061a33" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Island Cinema Empire</title>
+<style>
+  :root{
+    --bg1:#02111b;
+    --bg2:#072e45;
+    --panel:rgba(255,255,255,.08);
+    --panel2:rgba(255,255,255,.06);
+    --stroke:rgba(255,255,255,.12);
+    --text:#f2fbff;
+    --muted:rgba(255,255,255,.75);
+    --good:#2ef2c1;
+    --warn:#ffd166;
+    --bad:#ff5a7a;
+    --ink:#001018;
+    --btn:#00ffd5;
+    --btn2:#ffd166;
+    --shadow:0 14px 40px rgba(0,0,0,.35);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    color:var(--text);
+    background:linear-gradient(180deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:rgba(0,0,0,.55);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--stroke);
+    padding:12px 12px 10px;
+  }
+  .title{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+  }
+  .title h1{
+    margin:0;
+    font-size:16px;
+    letter-spacing:.2px;
+  }
+  .pillrow{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;
+  }
+  .pill{
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--stroke);
+    padding:8px 10px;
+    border-radius:999px;
+    font-size:13px;
+    display:flex; gap:8px; align-items:center;
+  }
+  .pill strong{font-weight:800}
+  .wrap{max-width:980px;margin:0 auto;padding:12px}
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:12px;
+  }
+  @media(min-width:880px){
+    .grid{
+      grid-template-columns: 1.1fr .9fr;
+      align-items:start;
+    }
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card .hd{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 12px 10px;
+    border-bottom:1px solid var(--stroke);
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+  }
+  .card .hd .k{font-weight:800}
+  .card .bd{padding:12px}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .col{flex:1; min-width:210px}
+  .muted{color:var(--muted)}
+  .small{font-size:12px}
+  .btn{
+    border:none;
+    cursor:pointer;
+    padding:10px 12px;
+    border-radius:14px;
+    font-weight:800;
+    letter-spacing:.1px;
+    background:var(--btn);
+    color:var(--ink);
+    box-shadow:0 10px 18px rgba(0,0,0,.22);
+  }
+  .btn.secondary{background:var(--btn2); color:var(--ink)}
+  .btn.ghost{
+    background:transparent; color:var(--text);
+    border:1px solid var(--stroke);
+    box-shadow:none;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.45; cursor:not-allowed; transform:none}
+  .tag{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid var(--stroke);
+    background:rgba(0,0,0,.15);
+    font-size:12px;
+  }
+  .tag.good{border-color:rgba(46,242,193,.35)}
+  .tag.warn{border-color:rgba(255,209,102,.35)}
+  .tag.bad{border-color:rgba(255,90,122,.35)}
+  .scene{
+    position:relative;
+    height:250px;
+    border-radius:18px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.15), transparent 35%),
+      linear-gradient(180deg, #1ccad8, #0ea5a5 55%, #0d7c86);
+    overflow:hidden;
+    border:1px solid var(--stroke);
+  }
+  .lagoon{
+    position:absolute; inset:auto -20% 0 -20%;
+    height:120px;
+    background:linear-gradient(90deg, rgba(0,255,213,.18), rgba(255,255,255,.08), rgba(0,255,213,.16));
+    filter:blur(0.5px);
+    transform:skewX(-8deg);
+  }
+  .sand{
+    position:absolute; left:-10%; right:-10%;
+    bottom:0; height:92px;
+    background:linear-gradient(180deg,#ffd27f,#fbbf5b);
+    border-top-left-radius:90px;
+    border-top-right-radius:90px;
+    opacity:.92;
+  }
+  .cinema{
+    position:absolute;
+    bottom:62px;
+    left:50%;
+    transform:translateX(-50%);
+    width:170px;
+    height:102px;
+    border-radius:16px;
+    background:linear-gradient(180deg,#111,#08111a);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 20px 40px rgba(0,0,0,.3);
+  }
+  .sign{
+    position:absolute;
+    top:10px; left:50%;
+    transform:translateX(-50%);
+    width:140px; height:26px;
+    border-radius:10px;
+    background:rgba(0,255,213,.16);
+    border:1px solid rgba(0,255,213,.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:900;
+    letter-spacing:.2px;
+  }
+  .door{
+    position:absolute; bottom:12px; left:50%;
+    transform:translateX(-50%);
+    width:44px; height:52px;
+    border-radius:12px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .spark{
+    position:absolute; top:10px; right:12px;
+    width:10px; height:10px; border-radius:50%;
+    background:rgba(255,209,102,.9);
+    box-shadow:0 0 0 6px rgba(255,209,102,.18);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{transform:scale(1);opacity:.95}
+    50%{transform:scale(1.18);opacity:.65}
+  }
+  .walker{
+    position:absolute;
+    bottom:18px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 10px 20px rgba(0,0,0,.25);
+    animation:walk 7.2s linear infinite;
+    opacity:.95;
+  }
+  .walker:nth-child(1){animation-duration:7.2s; animation-delay:.1s}
+  .walker:nth-child(2){animation-duration:6.1s; animation-delay:1.4s; background:#eafff9}
+  .walker:nth-child(3){animation-duration:8.3s; animation-delay:2.7s; background:#fff0f5}
+  @keyframes walk{
+    from{left:-10%}
+    to{left:110%}
+  }
 
-  <style>
-    :root{
-      --bg0:#020617;
-      --bg1:#061a33;
-      --panel:#071a2f;
-      --panel2:#0b2747;
-      --accent:#1e90ff;
-      --accent2:#63b3ff;
-      --text:#e6f0ff;
-      --muted:#9bb7d6;
-      --good:#22c55e;
-      --bad:#ef4444;
-      --warn:#f59e0b;
-
-      --radius:16px;
-      --shadow:0 0 30px rgba(30,144,255,.14);
-      --shadow2:0 10px 40px rgba(0,0,0,.35);
-    }
-
-    *{box-sizing:border-box;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    body{
-      margin:0;
-      min-height:100vh;
-      color:var(--text);
-      background:radial-gradient(1100px 700px at 50% -10%, var(--bg1), var(--bg0));
-      overflow-x:hidden;
-    }
-    .app{max-width:460px;margin:0 auto;padding:16px 14px 28px}
-
-    /* Header */
-    header{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      margin:10px 0 16px;
-    }
-    .brand{
-      display:flex;align-items:center;gap:12px;
-    }
-    .logo{
-      width:52px;height:52px;border-radius:16px;
-      display:grid;place-items:center;
-      background:linear-gradient(135deg, rgba(30,144,255,.22), rgba(30,144,255,.05));
-      border:1px solid rgba(99,179,255,.25);
-      box-shadow:0 0 20px rgba(30,144,255,.22);
-      position:relative;overflow:hidden;
-    }
-    .logo::before{
-      content:"";
-      position:absolute;inset:-30%;
-      background:conic-gradient(from 0deg, rgba(30,144,255,.0), rgba(30,144,255,.35), rgba(30,144,255,.0));
-      animation:spin 2.3s linear infinite;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .logo span{
-      position:relative;
-      font-weight:900;
-      font-size:20px;
-      letter-spacing:1px;
-      color:var(--accent2);
-      text-shadow:0 0 14px rgba(30,144,255,.6);
-    }
-    .titlewrap{line-height:1.05}
-    .title{
-      font-weight:900;letter-spacing:.5px;
-      font-size:18px;
-      color:var(--accent2);
-    }
-    .subtitle{font-size:12px;color:var(--muted);margin-top:3px}
-
-    /* Cards + layout */
-    .card{
-      background:linear-gradient(180deg, rgba(7,26,47,.98), rgba(7,26,47,.86));
-      border:1px solid rgba(99,179,255,.14);
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow:var(--shadow);
-      margin-bottom:12px;
-    }
-    .row{display:flex;gap:10px}
-    .row > *{flex:1}
-
-    /* Buttons */
-    button{
-      appearance:none;border:0;
-      border-radius:14px;
-      padding:12px 12px;
-      cursor:pointer;
-      color:white;
-      font-weight:700;
-      font-size:15px;
-      background:linear-gradient(135deg, rgba(30,144,255,1), rgba(30,144,255,.65));
-      box-shadow:0 10px 30px rgba(30,144,255,.20);
-      transition:transform .08s ease, filter .08s ease;
-    }
-    button:active{transform:scale(.985)}
-    button.secondary{
-      background:transparent;
-      border:1px solid rgba(99,179,255,.35);
-      color:var(--text);
-      box-shadow:none;
-    }
-    button.ghost{
-      background:transparent;
-      border:0;
-      color:var(--muted);
-      padding:10px 10px;
-      border-radius:12px;
-    }
-    button.small{
-      font-size:13px;
-      padding:10px 10px;
-      border-radius:12px;
-    }
-    .topbtns{display:flex;gap:8px}
-    .topbtns button{width:auto}
-
-    /* Menu tiles */
-    .tile{
-      padding:12px;
-      border-radius:16px;
-      background:linear-gradient(180deg, rgba(11,39,71,.75), rgba(7,26,47,.65));
-      border:1px solid rgba(99,179,255,.16);
-      cursor:pointer;
-      transition:transform .10s ease, border-color .10s ease;
-    }
-    .tile:hover{transform:translateY(-1px);border-color:rgba(99,179,255,.30)}
-    .tile h3{margin:0;font-size:15px}
-    .tile p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.3}
-    .tile .tag{display:inline-block;margin-top:8px;font-size:11px;color:rgba(230,240,255,.9);
-      padding:5px 8px;border-radius:999px;border:1px solid rgba(99,179,255,.26);
-      background:rgba(30,144,255,.08)
-    }
-
-    /* Game UI */
-    .stats{
-      display:flex;justify-content:space-between;align-items:center;gap:10px;
-      font-size:12px;color:var(--muted);margin-bottom:8px;
-    }
-    .stats b{color:var(--text)}
-    .meter{
-      display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;
-    }
-    .pill{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(99,179,255,.24);
-      background:rgba(30,144,255,.08);
-      color:rgba(230,240,255,.92);
-      display:inline-flex;gap:8px;align-items:center;
-    }
-    .pill .dot{width:8px;height:8px;border-radius:50%}
-    .dot.good{background:var(--good)}
-    .dot.warn{background:var(--warn)}
-    .dot.bad{background:var(--bad)}
-
-    .timerWrap{
-      margin:10px 0 6px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .bar{
-      height:10px;border-radius:999px;
-      background:rgba(99,179,255,.12);
-      overflow:hidden;border:1px solid rgba(99,179,255,.18);
-      flex:1;
-    }
-    .bar > i{display:block;height:100%;width:100%;
-      background:linear-gradient(90deg, rgba(30,144,255,1), rgba(99,179,255,.65));
-      border-radius:999px;
-      transform-origin:left center;
-      transform:scaleX(1);
-    }
-    .timeText{min-width:62px;text-align:right;color:#a8d6ff;font-weight:800;letter-spacing:.2px}
-
-    .question{
-      text-align:center;
-      margin:10px 0 10px;
-      font-size:20px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
-    .qMeta{
-      text-align:center;
-      font-size:12px;color:var(--muted);
-      margin-top:-2px;margin-bottom:10px;
-    }
-    input{
-      width:100%;
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid rgba(99,179,255,.22);
-      background:rgba(2,6,23,.35);
-      color:var(--text);
-      font-size:16px;
-      outline:none;
-    }
-    input:focus{border-color:rgba(99,179,255,.42);box-shadow:0 0 0 4px rgba(30,144,255,.12)}
-    .actions{display:flex;gap:10px;margin-top:10px}
-    .actions button{flex:1}
-
-    /* Toast feedback */
-    .toast{
-      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
-      background:rgba(2,6,23,.82);
-      border:1px solid rgba(99,179,255,.22);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      box-shadow:var(--shadow2);
-      display:flex;align-items:center;gap:10px;
-      opacity:0;pointer-events:none;
-      transition:opacity .15s ease, transform .15s ease;
-      z-index:50;
-      max-width:min(520px, calc(100% - 24px));
-    }
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
-    .toast .badge{
-      width:26px;height:26px;border-radius:10px;display:grid;place-items:center;font-weight:900;
-    }
-    .badge.good{background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.35);color:#8ef0b0}
-    .badge.bad{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.35);color:#ffb4b4}
-    .toast .msg{font-size:13px;color:rgba(230,240,255,.92);line-height:1.25}
-    .toast .msg b{color:var(--text)}
-    .shake{animation:shake .35s ease}
-    @keyframes shake{
-      0%,100%{transform:translateX(0)}
-      20%{transform:translateX(-6px)}
-      40%{transform:translateX(6px)}
-      60%{transform:translateX(-4px)}
-      80%{transform:translateX(4px)}
-    }
-
-    /* Modal */
-    .modalOverlay{
-      position:fixed;inset:0;background:rgba(0,0,0,.55);
-      display:none;align-items:flex-end;justify-content:center;
-      z-index:60;
-      padding:14px;
-    }
-    .modalOverlay.show{display:flex}
-    .modal{
-      width:min(520px, 100%);
-      background:linear-gradient(180deg, rgba(7,26,47,.98), rgba(7,26,47,.92));
-      border:1px solid rgba(99,179,255,.18);
-      border-radius:18px;
-      box-shadow:var(--shadow2);
-      padding:14px;
-      transform:translateY(8px);
-      animation:pop .15s ease forwards;
-    }
-    @keyframes pop{to{transform:translateY(0)}}
-    .modal h2{margin:0 0 8px;font-size:16px}
-    .modal .grid{
-      display:grid;grid-template-columns:1fr 1fr;gap:10px;
-    }
-    .field{
-      background:rgba(2,6,23,.25);
-      border:1px solid rgba(99,179,255,.16);
-      border-radius:14px;
-      padding:10px;
-    }
-    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    select, .toggle{
-      width:100%;
-      padding:10px 10px;
-      border-radius:12px;
-      border:1px solid rgba(99,179,255,.22);
-      background:rgba(2,6,23,.28);
-      color:var(--text);
-      outline:none;
-      font-size:14px;
-    }
-    .toggleRow{
-      display:flex;justify-content:space-between;align-items:center;gap:10px;
-      padding:10px 10px;border-radius:12px;
-      border:1px solid rgba(99,179,255,.22);
-      background:rgba(2,6,23,.28);
-    }
-    .toggleRow span{font-size:14px}
-    .switch{
-      width:46px;height:26px;border-radius:999px;background:rgba(99,179,255,.18);
-      border:1px solid rgba(99,179,255,.25);position:relative;flex:0 0 auto;cursor:pointer;
-    }
-    .switch i{
-      position:absolute;top:50%;left:3px;transform:translateY(-50%);
-      width:20px;height:20px;border-radius:50%;
-      background:rgba(230,240,255,.92);
-      transition:left .12s ease, background .12s ease;
-    }
-    .switch.on{background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.35)}
-    .switch.on i{left:22px;background:#bff7d1}
-    .modal .foot{display:flex;gap:10px;margin-top:10px}
-    .modal .foot button{flex:1}
-
-    /* Game Over Panel */
-    .overlayCenter{
-      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      padding:14px;background:rgba(0,0,0,.55);z-index:70;
-    }
-    .overlayCenter.show{display:flex}
-    .panel{
-      width:min(520px, 100%);
-      background:linear-gradient(180deg, rgba(7,26,47,.98), rgba(7,26,47,.92));
-      border:1px solid rgba(99,179,255,.18);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:var(--shadow2);
-    }
-    .panel h2{margin:0 0 6px}
-    .panel p{margin:0 0 10px;color:var(--muted);font-size:13px;line-height:1.35}
-    .kv{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-    .kv .pill{background:rgba(30,144,255,.07)}
-    .panel .btns{display:flex;gap:10px}
-    .panel .btns button{flex:1}
-
-    /* Footer small */
-    .tiny{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
-    .hidden{display:none}
-  </style>
+  .list{
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .item{
+    background:var(--panel2);
+    border:1px solid var(--stroke);
+    border-radius:14px;
+    padding:10px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .item .left{flex:1}
+  .item .name{font-weight:900}
+  .item .desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
+  .item .right{display:flex; flex-direction:column; gap:8px; align-items:flex-end; min-width:150px}
+  .item .right .price{font-weight:900}
+  .bar{
+    height:10px;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--stroke);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .bar > div{height:100%}
+  .bars{
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .miniChart{
+    display:grid;
+    grid-template-columns: 1fr 120px;
+    gap:10px;
+    align-items:center;
+    background:rgba(0,0,0,.12);
+    border:1px solid var(--stroke);
+    border-radius:14px;
+    padding:10px;
+  }
+  .miniChart .label{font-size:12px;color:var(--muted)}
+  .miniChart .val{font-weight:900}
+  .toast{
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:16px;
+    max-width:680px;
+    width:calc(100% - 22px);
+    background:rgba(0,0,0,.75);
+    border:1px solid rgba(255,255,255,.18);
+    padding:12px;
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    display:none;
+    z-index:20;
+  }
+  .toast.show{display:block}
+  .toast .trow{display:flex; justify-content:space-between; gap:10px; align-items:center}
+  .toast .trow .msg{line-height:1.3}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px}
+  .seg{
+    display:flex; gap:8px; flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .seg button{padding:8px 10px;border-radius:999px}
+  .seg .active{outline:2px solid rgba(0,255,213,.4)}
+  .footerBtns{display:flex; gap:8px; flex-wrap:wrap}
+  .danger{background:var(--bad); color:#fff}
+</style>
 </head>
-
 <body>
-  <div class="app">
-    <header>
-      <div class="brand">
-        <div class="logo" aria-label="N2 logo"><span>N2</span></div>
-        <div class="titlewrap">
-          <div class="title">N2</div>
-          <div class="subtitle">Endless brain training • logic • math • words</div>
-        </div>
-      </div>
 
-      <div class="topbtns">
-        <button class="ghost" id="btnStats" title="Stats">📊</button>
-        <button class="ghost" id="btnSettings" title="Settings">⚙️</button>
-      </div>
-    </header>
-
-    <!-- MENU -->
-    <div id="menu" class="card">
-      <div class="row">
-        <div class="tile" id="tileLogic" role="button" tabindex="0">
-          <h3>🔢 Advanced Logic</h3>
-          <p>N², Fibonacci, primes, alternating, differences, sequences…</p>
-          <div class="tag">Endless • scales</div>
-        </div>
-        <div class="tile" id="tileMath" role="button" tabindex="0">
-          <h3>➕ Math Speed</h3>
-          <p>Fast calc with smart difficulty + safe division.</p>
-          <div class="tag">Timer • combo</div>
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <div class="row">
-        <div class="tile" id="tileWord" role="button" tabindex="0">
-          <h3>🔤 Brain Words</h3>
-          <p>Unscramble • length grows with level.</p>
-          <div class="tag">Vocabulary • streak</div>
-        </div>
-        <div class="tile" id="tileDaily" role="button" tabindex="0">
-          <h3>📅 Daily Challenge</h3>
-          <p>Same challenge for today • track daily best.</p>
-          <div class="tag">20 rounds</div>
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <button id="btnQuickStart" class="secondary">▶️ Quick Start (recommended)</button>
-      <div class="tiny">Tip: Use Settings ⚙️ to switch Hardcore / Classic / Zen, timer length, sound, haptics, theme.</div>
-    </div>
-
-    <!-- GAME -->
-    <div id="game" class="card hidden">
-      <div class="stats">
-        <span>Mode: <b id="uiMode">—</b> • Game: <b id="uiGame">—</b></span>
-        <span>Best: <b id="uiBest">0</b></span>
-      </div>
-
-      <div class="meter">
-        <span class="pill"><span class="dot good"></span> Score: <b id="uiScore">0</b></span>
-        <span class="pill"><span class="dot warn"></span> Level: <b id="uiLevel">1</b></span>
-        <span class="pill"><span class="dot bad"></span> Lives: <b id="uiLives">—</b></span>
-      </div>
-
-      <div class="meter" style="margin-top:8px">
-        <span class="pill">🔥 Streak: <b id="uiStreak">0</b></span>
-        <span class="pill">✨ Combo: <b id="uiCombo">x1</b></span>
-        <span class="pill">🎯 Accuracy: <b id="uiAcc">—</b></span>
-      </div>
-
-      <div class="timerWrap" id="timerWrap">
-        <div class="bar" aria-label="timer bar"><i id="timeBar"></i></div>
-        <div class="timeText"><span id="uiTime">10.0</span>s</div>
-      </div>
-
-      <div class="question" id="uiQuestion">—</div>
-      <div class="qMeta" id="uiQMeta">—</div>
-
-      <input id="answer" inputmode="text" autocomplete="off" autocapitalize="characters" placeholder="Type your answer…" />
-      <div class="actions">
-        <button id="btnSubmit">Submit</button>
-        <button id="btnPause" class="secondary">Pause</button>
-      </div>
-      <div class="actions">
-        <button id="btnExit" class="secondary">Exit</button>
-        <button id="btnShare" class="secondary">Share Card</button>
-      </div>
+<header>
+  <div class="title">
+    <h1>🎬 Island Cinema Empire</h1>
+    <div class="footerBtns">
+      <button class="btn ghost" id="btnExport">Export Save</button>
+      <button class="btn ghost" id="btnImport">Import Save</button>
+      <button class="btn ghost danger" id="btnReset">Reset</button>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast" aria-live="polite">
-    <div class="badge good" id="toastBadge">✓</div>
+  <div class="pillrow">
+    <div class="pill">💵 <strong id="cash">0</strong> <span class="muted">Cash</span></div>
+    <div class="pill">🐚 <strong id="pearls">0</strong> <span class="muted">Pearls</span></div>
+    <div class="pill">⭐ <strong id="rep">0</strong> <span class="muted">Reputation</span></div>
+    <div class="pill">😊 <strong id="happy">0</strong>% <span class="muted">Happiness</span></div>
+    <div class="pill">🧹 <strong id="clean">0</strong>% <span class="muted">Cleanliness</span></div>
+    <div class="pill">🌤️ <strong id="season">—</strong> <span class="muted">Season</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="card">
+      <div class="hd">
+        <div class="k">Island View</div>
+        <div class="tag" id="islandTag">—</div>
+      </div>
+      <div class="bd">
+        <div class="scene" id="scene">
+          <div class="lagoon"></div>
+          <div class="sand"></div>
+          <div class="cinema">
+            <div class="sign" id="cinemaSign">LOCAL CINEMA</div>
+            <div class="spark" title="event"></div>
+            <div class="door"></div>
+          </div>
+          <div class="walker"></div>
+          <div class="walker"></div>
+          <div class="walker"></div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <div class="col">
+            <div class="tag good">💸 Income/sec: <strong id="ips">0</strong></div>
+          </div>
+          <div class="col">
+            <div class="tag warn">👥 Customers: <strong id="cust">0</strong>/min</div>
+          </div>
+          <div class="col">
+            <div class="tag" id="eventTag">🎉 Event: <strong id="eventName">None</strong></div>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <button class="btn" id="btnCollect">Collect Now 💵</button>
+          <button class="btn secondary" id="btnWatchAd">Watch Ad (+Pearls) 🐚</button>
+          <button class="btn ghost" id="btnNextSeason">Next Season 🌤️</button>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card" style="box-shadow:none">
+          <div class="hd">
+            <div class="k">Multi-Screen Cinema</div>
+            <div class="muted small">Schedule movies per screen</div>
+          </div>
+          <div class="bd">
+            <div class="list" id="screensList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+      <div class="hd">
+        <div class="k">Management</div>
+        <div class="muted small">Upgrade, staff, islands, events</div>
+      </div>
+      <div class="bd">
+        <div class="seg" id="tabs">
+          <button class="btn ghost active" data-tab="islands">Islands</button>
+          <button class="btn ghost" data-tab="upgrades">Upgrades</button>
+          <button class="btn ghost" data-tab="staff">Staff</button>
+          <button class="btn ghost" data-tab="events">Events</button>
+          <button class="btn ghost" data-tab="dashboard">Dashboard</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div id="tab-islands" class="tab">
+          <div class="list" id="islandsList"></div>
+        </div>
+
+        <div id="tab-upgrades" class="tab" style="display:none">
+          <div class="list" id="upgradesList"></div>
+        </div>
+
+        <div id="tab-staff" class="tab" style="display:none">
+          <div class="list" id="staffList"></div>
+        </div>
+
+        <div id="tab-events" class="tab" style="display:none">
+          <div class="list" id="eventsList"></div>
+        </div>
+
+        <div id="tab-dashboard" class="tab" style="display:none">
+          <div class="bars" id="dashBars"></div>
+          <div style="height:10px"></div>
+          <div class="miniChart">
+            <div>
+              <div class="label">Daily income (est.)</div>
+              <div class="val" id="dailyIncome">0</div>
+            </div>
+            <div>
+              <div class="label">Staff cost / min</div>
+              <div class="val" id="staffCost">0</div>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="miniChart">
+            <div>
+              <div class="label">Unlock progress</div>
+              <div class="val" id="unlockProgress">—</div>
+            </div>
+            <div>
+              <div class="label">Transport</div>
+              <div class="val" id="transportName">—</div>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="small muted">
+            Tip: If income feels slow, upgrade <span class="kbd">Screens</span> + hire a <span class="kbd">Floor Manager</span> to automate collection.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="trow">
     <div class="msg" id="toastMsg">—</div>
+    <button class="btn" id="toastBtn">OK</button>
   </div>
-
-  <!-- Settings Modal -->
-  <div class="modalOverlay" id="settingsOverlay" role="dialog" aria-modal="true">
-    <div class="modal">
-      <h2>⚙️ Settings</h2>
-
-      <div class="grid">
-        <div class="field">
-          <label>Play Style</label>
-          <select id="setStyle">
-            <option value="classic">Classic (3 lives)</option>
-            <option value="hardcore">Hardcore (1 life)</option>
-            <option value="zen">Zen (no timer)</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Base Timer (seconds)</label>
-          <select id="setTimer">
-            <option value="8">8</option>
-            <option value="10" selected>10</option>
-            <option value="12">12</option>
-            <option value="15">15</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Theme</label>
-          <select id="setTheme">
-            <option value="deep">Deep Blue</option>
-            <option value="neon">Neon Blue</option>
-            <option value="midnight">Midnight</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Difficulty Curve</label>
-          <select id="setCurve">
-            <option value="normal">Normal</option>
-            <option value="fast">Fast</option>
-            <option value="chill">Chill</option>
-          </select>
-        </div>
-
-        <div class="field" style="grid-column:1 / -1">
-          <label>Feedback</label>
-          <div class="toggleRow">
-            <span>Sound</span>
-            <div class="switch" id="swSound" role="switch" aria-checked="false"><i></i></div>
-          </div>
-          <div style="height:8px"></div>
-          <div class="toggleRow">
-            <span>Haptics (vibrate)</span>
-            <div class="switch" id="swHaptics" role="switch" aria-checked="false"><i></i></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="foot">
-        <button class="secondary" id="btnResetStats">Reset Stats</button>
-        <button id="btnSaveSettings">Save</button>
-      </div>
-
-      <div class="tiny" style="margin-top:10px">
-        PWA install note: for “Add to Home Screen”, host this file on HTTPS (GitHub Pages works best).
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats Modal -->
-  <div class="modalOverlay" id="statsOverlay" role="dialog" aria-modal="true">
-    <div class="modal">
-      <h2>📊 Stats</h2>
-      <div class="card" style="margin:10px 0 0">
-        <div class="kv">
-          <span class="pill">🏆 High Score: <b id="stHighScore">0</b></span>
-          <span class="pill">🚀 High Level: <b id="stHighLevel">1</b></span>
-          <span class="pill">🎮 Plays: <b id="stPlays">0</b></span>
-          <span class="pill">✅ Correct: <b id="stCorrect">0</b></span>
-          <span class="pill">🧠 Answered: <b id="stAnswered">0</b></span>
-          <span class="pill">🎯 Accuracy: <b id="stAcc">—</b></span>
-          <span class="pill">📅 Daily Best (today): <b id="stDailyBest">0</b></span>
-        </div>
-      </div>
-
-      <div class="foot">
-        <button class="secondary" id="btnCloseStats">Close</button>
-        <button id="btnShareStats">Share Card</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Game Over -->
-  <div class="overlayCenter" id="overOverlay">
-    <div class="panel">
-      <h2>Game Over</h2>
-      <p id="overText">—</p>
-      <div class="kv">
-        <span class="pill">Score: <b id="overScore">0</b></span>
-        <span class="pill">Level: <b id="overLevel">1</b></span>
-        <span class="pill">Accuracy: <b id="overAcc">—</b></span>
-        <span class="pill">Best: <b id="overBest">0</b></span>
-      </div>
-      <div class="btns">
-        <button id="btnPlayAgain">Play Again</button>
-        <button class="secondary" id="btnBackMenu">Back to Menu</button>
-      </div>
-    </div>
-  </div>
+</div>
 
 <script>
 /* =========================
-   Storage + Settings
+   DATA (FULL GAME)
 ========================= */
-const LS_KEY = "n2_v1";
-const todayKey = () => new Date().toISOString().slice(0,10);
+const GAME_VERSION = "1.0.0-html-full";
+const SAVE_KEY = "ice_full_save_v1";
 
-const defaultState = {
-  settings:{
-    style:"classic",      // classic | hardcore | zen
-    baseTimer:10,         // seconds
-    theme:"deep",         // deep | neon | midnight
-    curve:"normal",       // chill | normal | fast
-    sound:false,
-    haptics:false
-  },
-  stats:{
-    highScore:0,
-    highLevel:1,
-    plays:0,
-    correct:0,
-    answered:0,
-    dailyBestByDate:{}    // { "YYYY-MM-DD": number }
-  }
-};
+const ISLANDS = [
+  { id:0, name:"Local Island Cinema", theme:"Community", mult:1.00, unlock:0,   guests:"Locals", crowd:1.0 },
+  { id:1, name:"Fishing Community Island", theme:"Harbor", mult:1.20, unlock:100, guests:"Locals + Fishers", crowd:1.1 },
+  { id:2, name:"Tourist Island", theme:"Beach", mult:1.50, unlock:300, guests:"Tourists", crowd:1.25 },
+  { id:3, name:"Resort Cinema", theme:"Luxury", mult:2.00, unlock:700, guests:"Resort Guests", crowd:1.35 },
+  { id:4, name:"Floating Ocean Cinema", theme:"Lagoon", mult:3.00, unlock:1500, guests:"VIP + Tourists", crowd:1.5 },
+  { id:5, name:"Airport Island Mega Cinema", theme:"International", mult:4.00, unlock:3000, guests:"International", crowd:1.7 },
+];
 
-function loadState(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(!raw) return structuredClone(defaultState);
-    const parsed = JSON.parse(raw);
-    // merge safely
-    return {
-      settings:{...defaultState.settings, ...(parsed.settings||{})},
-      stats:{...defaultState.stats, ...(parsed.stats||{})}
-    };
-  }catch{
-    return structuredClone(defaultState);
-  }
-}
-function saveState(){
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
+const SEASONS = [
+  { id:0, name:"Off-Season", custMult:0.85, spendMult:0.9, repMult:0.9 },
+  { id:1, name:"Festival Season", custMult:1.05, spendMult:1.0, repMult:1.15 },
+  { id:2, name:"Peak Tourism", custMult:1.25, spendMult:1.15, repMult:1.0 },
+];
 
-let state = loadState();
+const TRANSPORT = [
+  { id:0, name:"Walking", custMult:1.00, cap:1.0 },
+  { id:1, name:"Dhoni Boats", custMult:1.20, cap:1.15 },
+  { id:2, name:"Speedboats", custMult:1.45, cap:1.35 },
+  { id:3, name:"Seaplanes", custMult:1.80, cap:1.55 },
+];
+
+const MOVIES = [
+  { id:0, name:"Island Romance", genre:"Romance", cost:  0, basePop:1.10, pref:[0,3], repGain:1.1 },
+  { id:1, name:"Ocean Action", genre:"Action", cost:150, basePop:1.25, pref:[2,5], repGain:1.0 },
+  { id:2, name:"Maldives Documentary", genre:"Doc", cost:220, basePop:1.40, pref:[0,4], repGain:1.25 },
+  { id:3, name:"Resort Premiere Special", genre:"Premiere", cost:350, basePop:1.55, pref:[3,4,5], repGain:1.35 },
+];
+
+const EVENTS = [
+  { id:0, name:"Eid Movie Night 🌙", bonus:1.80, repBoost:1.35, durationSec: 120, pearlReward: 2 },
+  { id:1, name:"Island Film Festival 🎞️", bonus:2.20, repBoost:1.55, durationSec: 150, pearlReward: 3 },
+  { id:2, name:"Resort Premiere ✨", bonus:2.60, repBoost:1.35, durationSec: 120, pearlReward: 4 },
+  { id:3, name:"Community Outdoor Cinema 🏝️", bonus:1.60, repBoost:1.25, durationSec: 180, pearlReward: 2 },
+];
+
+const SCREEN_TYPES = [
+  { id:0, name:"Screen 1 (Basic)", base:1.00 },
+  { id:1, name:"Screen 2 (HD)", base:1.15 },
+  { id:2, name:"Screen 3 (IMAX)", base:1.35 },
+  { id:3, name:"Screen 4 (Open-air)", base:1.25 },
+];
+
+const STAFF = [
+  { key:"cleaner", name:"Cleaner", desc:"Improves cleanliness → happiness → income.", baseCost:120, salaryPerMin:6, cleanBonus:7, happyBonus:2, auto:false },
+  { key:"floor", name:"Floor Manager", desc:"Auto-collect + boosts capacity.", baseCost:220, salaryPerMin:10, cleanBonus:2, happyBonus:4, auto:true },
+  { key:"event", name:"Event Manager", desc:"Events last longer + better rewards.", baseCost:350, salaryPerMin:14, cleanBonus:1, happyBonus:3, auto:false },
+];
 
 /* =========================
-   Theme
+   SAVE MODEL (JSON)
 ========================= */
-function applyTheme(theme){
-  // Adjust variables for a few presets (still dark/blue).
-  const r = document.documentElement.style;
-  if(theme==="deep"){
-    r.setProperty("--bg0","#020617");
-    r.setProperty("--bg1","#061a33");
-    r.setProperty("--panel","#071a2f");
-    r.setProperty("--panel2","#0b2747");
-    r.setProperty("--accent","#1e90ff");
-    r.setProperty("--accent2","#63b3ff");
-  }else if(theme==="neon"){
-    r.setProperty("--bg0","#010512");
-    r.setProperty("--bg1","#041a38");
-    r.setProperty("--panel","#061e3b");
-    r.setProperty("--panel2","#072a58");
-    r.setProperty("--accent","#2ea8ff");
-    r.setProperty("--accent2","#8be3ff");
-  }else{ // midnight
-    r.setProperty("--bg0","#00030c");
-    r.setProperty("--bg1","#031227");
-    r.setProperty("--panel","#04162e");
-    r.setProperty("--panel2","#062444");
-    r.setProperty("--accent","#1677ff");
-    r.setProperty("--accent2","#9ac7ff");
-  }
-}
-applyTheme(state.settings.theme);
-
-/* =========================
-   Tiny audio + haptics
-========================= */
-let audioCtx = null;
-function beep(freq=660, dur=0.06, type="sine", gain=0.05){
-  if(!state.settings.sound) return;
-  try{
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type;
-    o.frequency.value = freq;
-    g.gain.value = gain;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start();
-    o.stop(audioCtx.currentTime + dur);
-  }catch{}
-}
-function vibrate(ms=35){
-  if(!state.settings.haptics) return;
-  if(navigator.vibrate) navigator.vibrate(ms);
-}
-
-/* =========================
-   Seeded RNG (Daily Challenge)
-========================= */
-function xmur3(str){
-  let h = 1779033703 ^ str.length;
-  for (let i=0; i<str.length; i++){
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return function(){
-    h = Math.imul(h ^ (h >>> 16), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return (h ^= h >>> 16) >>> 0;
-  }
-}
-function mulberry32(a){
-  return function(){
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  }
-}
-
-/* =========================
-   Game State
-========================= */
-const ui = {
-  menu: $("#menu"),
-  game: $("#game"),
-  answer: $("#answer"),
-  uiMode: $("#uiMode"),
-  uiGame: $("#uiGame"),
-  uiBest: $("#uiBest"),
-  uiScore: $("#uiScore"),
-  uiLevel: $("#uiLevel"),
-  uiLives: $("#uiLives"),
-  uiStreak: $("#uiStreak"),
-  uiCombo: $("#uiCombo"),
-  uiAcc: $("#uiAcc"),
-  timerWrap: $("#timerWrap"),
-  uiTime: $("#uiTime"),
-  timeBar: $("#timeBar"),
-  uiQuestion: $("#uiQuestion"),
-  uiQMeta: $("#uiQMeta"),
-
-  overOverlay: $("#overOverlay"),
-  overText: $("#overText"),
-  overScore: $("#overScore"),
-  overLevel: $("#overLevel"),
-  overAcc: $("#overAcc"),
-  overBest: $("#overBest"),
-
-  toast: $("#toast"),
-  toastBadge: $("#toastBadge"),
-  toastMsg: $("#toastMsg"),
-
-  settingsOverlay: $("#settingsOverlay"),
-  statsOverlay: $("#statsOverlay")
-};
-
-let game = null; // active session
-
-function newSession(){
-  const style = state.settings.style; // classic/hardcore/zen
-  const lives = (style==="classic") ? 3 : 1;
+function defaultSave(){
   return {
-    isRunning:false,
-    isPaused:false,
-    mode:"endless",         // endless | daily
-    gameType:"logic",       // logic | math | word | mix
-    style,
-    baseTimer:+state.settings.baseTimer,
-    curve:state.settings.curve,
-    lives,
-    score:0,
-    level:1,
-    streak:0,
-    combo:1,
-    correct:0,
-    answered:0,
-    qIndex:0,               // for daily
-    qTotal:20,              // daily fixed rounds
-    rng:null,               // seeded for daily
-    current:null,           // {q, ans, meta, input}
-    timerId:null,
-    tLeft:0,
-    tTotal:0
+    version: GAME_VERSION,
+    cash: 500,
+    pearls: 0,
+    rep: 0,
+    happiness: 70,
+    cleanliness: 65,
+
+    islandId: 0,
+    unlockedIslands: [true,false,false,false,false,false],
+
+    seasonId: 0,
+    transportId: 0,
+
+    // Upgrades (global)
+    ticketLv: 1,
+    snackLv: 1,
+    decorLv: 0,
+    soundLv: 0,
+
+    // Screens
+    screens: SCREEN_TYPES.map(s => ({
+      id:s.id,
+      level: 1,
+      movieId: 0
+    })),
+
+    // Licensed movies
+    licensed: { 0:true },
+
+    // Staff levels
+    staff: { cleaner:0, floor:0, event:0 },
+
+    // Event
+    activeEventId: null,
+    eventEndsAt: 0,
+
+    // Bookkeeping
+    lastTickAt: Date.now(),
+    lastSeenAt: Date.now(),
+    history: {
+      lastMinuteCash: 0,
+      lastMinuteRep: 0,
+    }
   };
 }
 
-function effectiveCurveFactor(){
-  // fast = scale up level quicker, chill = easier.
-  const c = state.settings.curve;
-  if(c==="fast") return 1.15;
-  if(c==="chill") return 0.90;
-  return 1.0;
-}
-
-function comboFromStreak(streak){
-  // +1 multiplier every 4 correct, cap at x6
-  return Math.min(6, 1 + Math.floor(streak/4));
-}
-
-function accuracyStr(correct, answered){
-  if(answered<=0) return "—";
-  return Math.round((correct/answered)*100) + "%";
-}
-
-/* =========================
-   Question Banks
-========================= */
-const WORDS = {
-  4:["FOCUS","BRAIN","TASKS","MIND","LOGIC"],
-  5:["SMART","LEARN","SPEED","TIMER","LEVEL","POWER"],
-  6:["PUZZLE","MEMORY","NUMBER","PATTERN","TARGET"],
-  7:["ACCURACY","CHALLGE","HABITS","COGNIZE","IMPULSE"].map(w=>w.replace(/[^A-Z]/g,"").slice(0,7)),
-  8:["REACTION","THINKING","TRAINING","PROGRESS","SEQUENCE"].map(w=>w.replace(/[^A-Z]/g,"").slice(0,8)),
-  9:["CONSISTEN","CHALLENGE","ATTENTION","DIFFICULT"].map(w=>w.replace(/[^A-Z]/g,"").slice(0,9))
-};
-
-function pickWordByLevel(level, rnd=Math.random){
-  const l = Math.min(9, 4 + Math.floor(level/4));
-  const key = Math.max(4, Math.min(9, l));
-  const arr = WORDS[key] && WORDS[key].length ? WORDS[key] : WORDS[6];
-  return arr[Math.floor(rnd()*arr.length)];
-}
-
-function scramble(word, rnd=Math.random){
-  const a = word.split("");
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(rnd()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
+function loadSave(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return defaultSave();
+    const obj = JSON.parse(raw);
+    // minimal migration safety
+    const base = defaultSave();
+    return deepMerge(base, obj);
+  }catch{
+    return defaultSave();
   }
-  const s = a.join("");
-  return (s===word && word.length>2) ? scramble(word, rnd) : s;
 }
 
-/* =========================
-   Logic Generators (advanced)
-========================= */
-function genSquare(level, rnd){
-  const n = 2 + Math.floor(rnd()*(Math.min(30, 5 + level)));
-  return { q: `${n}² = ?`, ans: String(n*n), meta:"Squares (N²)" };
-}
-
-function genPowersOfTwo(level, rnd){
-  const exp = 2 + Math.floor(rnd()*(Math.min(10, 3 + Math.floor(level/3))));
-  const a = 2**exp;
-  return { q: `${a/2}, ${a}, ?`, ans: String(a*2), meta:"Powers of 2" };
-}
-
-function genArithmeticMissing(level, rnd){
-  const start = 2 + Math.floor(rnd()*(10 + level));
-  const step  = 1 + Math.floor(rnd()*(2 + Math.floor(level/3)));
-  // start, start+step, ?, start+3step
-  const a = start;
-  const b = start + step;
-  const c = start + 2*step;
-  const d = start + 3*step;
-  return { q: `${a}, ${b}, ?, ${d}`, ans: String(c), meta:"Arithmetic progression" };
-}
-
-function genFibonacci(level, rnd){
-  const a = 1 + Math.floor(rnd()*(3 + Math.floor(level/4)));
-  const b = 1 + Math.floor(rnd()*(3 + Math.floor(level/4)));
-  const c = a+b;
-  const d = b+c;
-  const e = c+d;
-  return { q: `${a}, ${b}, ${c}, ${d}, ?`, ans: String(e), meta:"Fibonacci-style" };
-}
-
-function genPrimes(level, rnd){
-  const primes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
-  const maxIdx = Math.min(primes.length-6, 3 + Math.floor(level/2));
-  const i = Math.floor(rnd()*Math.max(1, maxIdx));
-  const seq = primes.slice(i, i+4);
-  const ans = primes[i+4];
-  return { q: `${seq[0]}, ${seq[1]}, ${seq[2]}, ${seq[3]}, ?`, ans: String(ans), meta:"Prime numbers" };
-}
-
-function genAlternating(level, rnd){
-  const a = 1 + Math.floor(rnd()*(6 + level));
-  const b = 2 + Math.floor(rnd()*(6 + level));
-  const step = 1 + Math.floor(rnd()*(2 + Math.floor(level/4)));
-  // pattern: a, b, a+step, b+step, a+2step, ?
-  const s1 = a;
-  const s2 = b;
-  const s3 = a + step;
-  const s4 = b + step;
-  const s5 = a + 2*step;
-  const s6 = b + 2*step;
-  return { q: `${s1}, ${s2}, ${s3}, ${s4}, ${s5}, ?`, ans: String(s6), meta:"Alternating pattern" };
-}
-
-function genIncreasingDifferences(level, rnd){
-  const start = 2 + Math.floor(rnd()*(8 + level));
-  const d1 = 2 + Math.floor(rnd()*(2 + Math.floor(level/4)));
-  const d2 = d1 + 1;
-  const d3 = d2 + 1;
-  const a = start;
-  const b = a + d1;
-  const c = b + d2;
-  const d = c + d3;
-  const nextDiff = d3 + 1;
-  const e = d + nextDiff;
-  return { q: `${a}, ${b}, ${c}, ${d}, ?`, ans: String(e), meta:"Increasing differences" };
-}
-
-function genSquaresPlusOne(level, rnd){
-  const n = 2 + Math.floor(rnd()*(Math.min(10, 3 + Math.floor(level/3))));
-  // (n^2+1), ((n+1)^2+1), ((n+2)^2+1), ?
-  const a = n*n + 1;
-  const b = (n+1)*(n+1) + 1;
-  const c = (n+2)*(n+2) + 1;
-  const d = (n+3)*(n+3) + 1;
-  return { q: `${a}, ${b}, ${c}, ?`, ans: String(d), meta:"Squares + 1" };
-}
-
-function genMixedOps(level, rnd){
-  // pattern: x*2+1, then apply same step
-  const x = 2 + Math.floor(rnd()*(6 + level));
-  const a = x;
-  const b = a*2 + 1;
-  const c = b*2 + 1;
-  const d = c*2 + 1;
-  return { q: `${a}, ${b}, ${c}, ?`, ans: String(d), meta:"x2 + 1 pattern" };
-}
-
-const LOGIC_GENS = [
-  genSquare,
-  genPowersOfTwo,
-  genArithmeticMissing,
-  genFibonacci,
-  genPrimes,
-  genAlternating,
-  genIncreasingDifferences,
-  genSquaresPlusOne,
-  genMixedOps
-];
-
-function genLogic(level, rnd){
-  // At low levels, prefer simpler. At higher, increase variety.
-  const cap = Math.min(LOGIC_GENS.length, 3 + Math.floor(level/2));
-  const idx = Math.floor(rnd()*cap);
-  return LOGIC_GENS[idx](level, rnd);
-}
-
-/* =========================
-   Math Generator (scales)
-========================= */
-function genMath(level, rnd){
-  const factor = effectiveCurveFactor();
-  const L = Math.max(1, Math.floor(level*factor));
-
-  const max = Math.min(200, 10 + L*3);
-  const a = 1 + Math.floor(rnd()*max);
-  const b = 1 + Math.floor(rnd()*max);
-
-  // operations unlock by level
-  const ops = ["+","-","*"];
-  if(L >= 6) ops.push("÷");
-
-  const op = ops[Math.floor(rnd()*ops.length)];
-  if(op==="÷"){
-    // make clean division: (a*b) ÷ a = b
-    const x = 2 + Math.floor(rnd()*Math.min(20, 3 + Math.floor(L/2)));
-    const y = 2 + Math.floor(rnd()*Math.min(20, 3 + Math.floor(L/2)));
-    const left = x*y;
-    return { q:`${left} ÷ ${x} = ?`, ans:String(y), meta:"Division (clean)" };
-  }
-
-  let ans = 0;
-  if(op==="+") ans = a + b;
-  if(op==="-") ans = a - b;
-  if(op==="*") ans = a * b;
-
-  return { q:`${a} ${op} ${b} = ?`, ans:String(ans), meta:"Math speed" };
-}
-
-/* =========================
-   Word Generator
-========================= */
-function genWord(level, rnd){
-  const w = pickWordByLevel(level, rnd);
-  const s = scramble(w, rnd);
-  return { q:`Unscramble: ${s}`, ans:w, meta:`Word length ${w.length}` };
-}
-
-/* =========================
-   Game Orchestration
-========================= */
-function showMenu(){
-  ui.game.classList.add("hidden");
-  ui.menu.classList.remove("hidden");
-  ui.overOverlay.classList.remove("show");
-  setToast(false);
-}
-
-function showGame(){
-  ui.menu.classList.add("hidden");
-  ui.game.classList.remove("hidden");
-  ui.answer.focus({preventScroll:true});
-}
-
-function startEndless(gameType="mix"){
-  game = newSession();
-  game.mode = "endless";
-  game.gameType = gameType;
-  state.stats.plays++;
-  saveState();
-  updateBestUI();
-  showGame();
-  beginRound();
-}
-
-function startDaily(){
-  game = newSession();
-  game.mode = "daily";
-  game.gameType = "mix";
-  game.qTotal = 20;
-  game.qIndex = 0;
-
-  const seed = xmur3("N2:" + todayKey())();
-  game.rng = mulberry32(seed);
-
-  state.stats.plays++;
-  saveState();
-  updateBestUI();
-  showGame();
-  beginRound();
-}
-
-function labelStyle(style){
-  if(style==="classic") return "Classic";
-  if(style==="hardcore") return "Hardcore";
-  return "Zen";
-}
-
-function labelGameType(t){
-  if(t==="logic") return "Logic";
-  if(t==="math") return "Math";
-  if(t==="word") return "Words";
-  return "Mix";
-}
-
-function updateBestUI(){
-  ui.uiBest.textContent = state.stats.highScore || 0;
-}
-
-function updateHUD(){
-  ui.uiMode.textContent = labelStyle(game.style) + (game.mode==="daily" ? " • Daily" : " • Endless");
-  ui.uiGame.textContent = labelGameType(game.gameType);
-  ui.uiScore.textContent = game.score;
-  ui.uiLevel.textContent = game.level;
-  ui.uiLives.textContent = (game.style==="zen") ? "∞" : String(game.lives);
-  ui.uiStreak.textContent = game.streak;
-  ui.uiCombo.textContent = "x" + game.combo;
-  ui.uiAcc.textContent = accuracyStr(game.correct, game.answered);
-
-  // timer visibility
-  ui.timerWrap.style.display = (game.style==="zen") ? "none" : "flex";
-}
-
-function difficultySeconds(){
-  // base timer reduced by level slightly, adjusted by curve, floor 4s
-  let base = game.baseTimer;
-  const curve = game.curve;
-  let curveAdj = 0;
-  if(curve==="fast") curveAdj = -1;
-  if(curve==="chill") curveAdj = +1;
-
-  const drop = Math.floor(game.level / 5);
-  return Math.max(4, base + curveAdj - drop);
-}
-
-function pickQuestion(){
-  const rnd = game.rng ? game.rng : Math.random;
-
-  // Mix mode picks among logic/math/word; otherwise fixed.
-  let t = game.gameType;
-  if(t==="mix"){
-    const L = game.level;
-    const weights = [
-      {k:"logic", w: 0.42},
-      {k:"math",  w: 0.36},
-      {k:"word",  w: 0.22}
-    ];
-    // small shift toward logic as level rises
-    if(L >= 10){weights[0].w += 0.06; weights[1].w -= 0.03; weights[2].w -= 0.03;}
-    const roll = rnd();
-    let sum = 0;
-    for(const it of weights){
-      sum += it.w;
-      if(roll <= sum){t = it.k; break;}
+function deepMerge(target, source){
+  if(typeof source !== "object" || source === null) return target;
+  for(const k of Object.keys(source)){
+    const sv = source[k];
+    const tv = target[k];
+    if(Array.isArray(tv) && Array.isArray(sv)){
+      target[k] = sv; // accept saved array
+    }else if(typeof tv === "object" && tv && typeof sv === "object" && sv){
+      target[k] = deepMerge(tv, sv);
+    }else{
+      target[k] = sv;
     }
   }
-
-  let q;
-  if(t==="logic") q = genLogic(game.level, rnd);
-  if(t==="math")  q = genMath(game.level, rnd);
-  if(t==="word")  q = genWord(game.level, rnd);
-
-  // normalize answer compare
-  const ans = String(q.ans).trim().toUpperCase();
-  return { q: q.q, ans, meta: q.meta, type: t };
+  return target;
 }
 
-function beginRound(){
-  game.isRunning = true;
-  game.isPaused = false;
-
-  // daily ends after fixed rounds
-  if(game.mode==="daily" && game.qIndex >= game.qTotal){
-    endGame(true);
-    return;
-  }
-
-  const item = pickQuestion();
-  game.current = item;
-
-  ui.uiQuestion.textContent = item.q;
-  ui.uiQMeta.textContent = (game.mode==="daily")
-    ? `Daily ${game.qIndex+1}/${game.qTotal} • ${item.type.toUpperCase()} • ${item.meta}`
-    : `${item.type.toUpperCase()} • ${item.meta}`;
-
-  ui.answer.value = "";
-  ui.answer.disabled = false;
-
-  updateHUD();
-
-  // timer
-  stopTimer();
-  if(game.style !== "zen"){
-    const sec = difficultySeconds();
-    startTimer(sec);
-  }
+function persist(){
+  save.lastSeenAt = Date.now();
+  localStorage.setItem(SAVE_KEY, JSON.stringify(save));
 }
 
-function startTimer(seconds){
-  game.tTotal = seconds;
-  game.tLeft = seconds;
-  renderTimer();
-  game.timerId = setInterval(()=>{
-    if(!game.isRunning || game.isPaused) return;
-    game.tLeft = Math.max(0, game.tLeft - 0.1);
-    renderTimer();
-    if(game.tLeft <= 0){
-      stopTimer();
-      handleWrong("Time up");
+/* =========================
+   HELPERS
+========================= */
+const $ = (id)=>document.getElementById(id);
+
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+function fmt(n){
+  n = Math.floor(n);
+  if(n>=1_000_000) return (n/1_000_000).toFixed(2)+"M";
+  if(n>=1_000) return (n/1_000).toFixed(1)+"K";
+  return String(n);
+}
+function toast(msg, btnText="OK"){
+  $("toastMsg").textContent = msg;
+  $("toastBtn").textContent = btnText;
+  $("toast").classList.add("show");
+}
+$("toastBtn").onclick = ()=>$("toast").classList.remove("show");
+
+/* =========================
+   GAME STATE
+========================= */
+let save = loadSave();
+
+/* =========================
+   ECONOMY FORMULAS
+========================= */
+function island(){ return ISLANDS[save.islandId]; }
+function season(){ return SEASONS[save.seasonId]; }
+function transport(){ return TRANSPORT[save.transportId]; }
+function activeEvent(){
+  if(save.activeEventId === null) return null;
+  return EVENTS.find(e=>e.id===save.activeEventId) || null;
+}
+
+function cleanlinessBonus(){
+  // 0.75x to 1.25x
+  return 0.75 + (save.cleanliness/100)*0.5;
+}
+function happinessBonus(){
+  // 0.70x to 1.30x
+  return 0.70 + (save.happiness/100)*0.6;
+}
+function staffBonuses(){
+  const s = save.staff;
+  // Each level meaningful but bounded
+  const cleanAdd = (s.cleaner*7) + (s.floor*2) + (s.event*1);
+  const happyAdd = (s.cleaner*2) + (s.floor*4) + (s.event*3);
+  const capMult = 1 + (s.floor * 0.08);
+
+  return { cleanAdd, happyAdd, capMult };
+}
+function staffCostPerMin(){
+  let cost = 0;
+  for(const st of STAFF){
+    cost += save.staff[st.key] * st.salaryPerMin;
+  }
+  return cost;
+}
+function customerRatePerMin(){
+  // base customers depends on island crowd + season + transport + capacity from staff
+  const base = 18 * island().crowd;
+  const cap = staffBonuses().capMult * transport().cap;
+  return base * season().custMult * transport().custMult * cap;
+}
+
+function screenIncomePerSec(screen){
+  // base ticket+snack per screen
+  const ticket = 1.2 * save.ticketLv;
+  const snack  = 0.9 * save.snackLv;
+  const decor  = 0.06 * save.decorLv;
+  const sound  = 0.05 * save.soundLv;
+
+  const base = (ticket + snack + decor + sound) * SCREEN_TYPES[screen.id].base;
+
+  const mv = MOVIES.find(m=>m.id===screen.movieId) || MOVIES[0];
+  const pref = mv.pref.includes(save.islandId) ? 1.25 : 0.75;
+
+  // screen level boosts
+  const lvMult = 1 + (screen.level-1)*0.18;
+
+  // event bonus
+  const ev = activeEvent();
+  const evMult = ev ? ev.bonus : 1;
+
+  // customer capacity factor
+  const custFactor = clamp(customerRatePerMin()/24, 0.55, 1.6);
+
+  // overall multipliers
+  const mult = island().mult * season().spendMult * pref * lvMult * evMult * custFactor * cleanlinessBonus() * happinessBonus();
+
+  return base * mult;
+}
+
+function totalIncomePerSec(){
+  let sum = 0;
+  for(const sc of save.screens) sum += screenIncomePerSec(sc);
+  return sum;
+}
+
+function repGainPerSec(){
+  // Reputation grows via good operation; event + season can boost
+  const ev = activeEvent();
+  const evMult = ev ? ev.repBoost : 1;
+  const quality = (save.happiness/100) * 0.7 + (save.cleanliness/100) * 0.3; // 0..1
+  return 0.04 * quality * evMult * season().repMult * (1 + save.decorLv*0.01);
+}
+
+function applyStaffToMetrics(){
+  const b = staffBonuses();
+  save.cleanliness = clamp(save.cleanliness + b.cleanAdd*0.12, 0, 100);
+  save.happiness   = clamp(save.happiness   + b.happyAdd*0.08,  0, 100);
+}
+
+function decayMetrics(){
+  // Without staff, cleanliness drops faster
+  const staffTotal = save.staff.cleaner + save.staff.floor + save.staff.event;
+  const decay = staffTotal>0 ? 0.10 : 0.22;
+  save.cleanliness = clamp(save.cleanliness - decay, 0, 100);
+
+  // happiness follows cleanliness + crowd pressure
+  const crowdPressure = clamp((customerRatePerMin()/30) - 0.6, 0, 1) * 0.12;
+  save.happiness = clamp(save.happiness - (0.08 + crowdPressure) + (save.cleanliness/100)*0.04, 0, 100);
+}
+
+/* =========================
+   UNLOCKS
+========================= */
+function checkIslandUnlocks(){
+  for(const isl of ISLANDS){
+    if(!save.unlockedIslands[isl.id] && save.rep >= isl.unlock){
+      save.unlockedIslands[isl.id] = true;
+      toast(`New island unlocked: ${isl.name} 🏝️`);
     }
-  }, 100);
-}
-
-function stopTimer(){
-  if(game && game.timerId){
-    clearInterval(game.timerId);
-    game.timerId = null;
   }
 }
-
-function renderTimer(){
-  ui.uiTime.textContent = game.tLeft.toFixed(1);
-  const ratio = (game.tTotal <= 0) ? 0 : (game.tLeft / game.tTotal);
-  ui.timeBar.style.transform = `scaleX(${Math.max(0, ratio)})`;
-}
-
-function pauseToggle(){
-  if(!game || !game.isRunning) return;
-
-  game.isPaused = !game.isPaused;
-  ui.answer.disabled = game.isPaused;
-  $("#btnPause").textContent = game.isPaused ? "Resume" : "Pause";
-
-  if(game.isPaused){
-    setToast(true, "⏸ Paused", true);
-  }else{
-    setToast(false);
-    ui.answer.focus({preventScroll:true});
-  }
+function nextLockedIsland(){
+  const locked = ISLANDS.filter(i=>!save.unlockedIslands[i.id]).sort((a,b)=>a.unlock-b.unlock)[0] || null;
+  return locked;
 }
 
 /* =========================
-   Answer Checking
+   ACTIONS
 ========================= */
-function normalizeInput(v){
-  return String(v ?? "").trim().toUpperCase();
+function addCash(n){ save.cash += n; }
+function spendCash(n){ if(save.cash < n) return false; save.cash -= n; return true; }
+function addPearls(n){ save.pearls += n; }
+
+function collectNow(){
+  // manual collection gives a burst of 12 seconds of income
+  const gain = totalIncomePerSec() * 12;
+  addCash(gain);
+  save.rep += repGainPerSec() * 8;
+  applyStaffToMetrics();
+  checkIslandUnlocks();
+  persist();
+  render();
+  toast(`Collected +${fmt(gain)} cash 💵`);
 }
 
-function submit(){
-  if(!game || !game.isRunning || game.isPaused) return;
-  const v = normalizeInput(ui.answer.value);
-  if(!v) return;
-
-  game.answered++;
-  state.stats.answered++;
-
-  const expected = game.current.ans;
-  const ok = (v === expected);
-
-  if(ok){
-    game.correct++;
-    state.stats.correct++;
-
-    game.streak++;
-    game.combo = comboFromStreak(game.streak);
-
-    const gain = 10 * game.combo;
-    game.score += gain;
-
-    // level up gradually
-    game.level += 1;
-
-    beep(780, 0.05, "sine", 0.055);
-    vibrate(25);
-
-    setToast(true, `✅ Correct! <b>+${gain}</b> • Answer: <b>${expected}</b>`, true, "good");
-    updateRecords();
-    if(game.mode==="daily") game.qIndex++;
-
-    beginRound();
-  }else{
-    handleWrong(`Wrong (expected ${expected})`);
-  }
-
-  saveState();
-  updateHUD();
+function watchAd(){
+  // no forced ads: this is voluntary reward
+  addPearls(2);
+  save.cash += totalIncomePerSec() * 8;
+  persist();
+  render();
+  toast("Thanks! You got +2 Pearls 🐚 and a small cash boost.");
 }
 
-function handleWrong(reason){
-  game.answered++;
-  state.stats.answered++;
+function nextSeason(){
+  save.seasonId = (save.seasonId + 1) % SEASONS.length;
+  persist();
+  render();
+  toast(`Season changed to: ${season().name} 🌤️`);
+}
 
-  game.streak = 0;
-  game.combo = 1;
-
-  if(game.style !== "zen"){
-    game.lives -= 1;
+function buyMovie(movieId){
+  const mv = MOVIES.find(m=>m.id===movieId);
+  if(!mv) return;
+  if(save.licensed[movieId]) return;
+  if(!spendCash(mv.cost)){
+    toast("Not enough cash to license that movie.");
+    return;
   }
+  save.licensed[movieId] = true;
+  persist();
+  render();
+  toast(`Licensed: ${mv.name} 🎟️`);
+}
 
-  beep(220, 0.09, "square", 0.05);
-  vibrate(60);
+function setScreenMovie(screenId, movieId){
+  const sc = save.screens.find(s=>s.id===screenId);
+  if(!sc) return;
+  if(!save.licensed[movieId]){
+    toast("You must license this movie first.");
+    return;
+  }
+  sc.movieId = movieId;
+  persist();
+  render();
+}
 
-  ui.game.classList.add("shake");
-  setTimeout(()=>ui.game.classList.remove("shake"), 350);
+function upgradeScreen(screenId){
+  const sc = save.screens.find(s=>s.id===screenId);
+  if(!sc) return;
+  const cost = Math.floor((120 * (1+screenId*0.2)) * Math.pow(1.55, sc.level-1));
+  if(!spendCash(cost)){
+    toast("Not enough cash to upgrade this screen.");
+    return;
+  }
+  sc.level++;
+  persist();
+  render();
+  toast(`Upgraded ${SCREEN_TYPES[screenId].name} to Lv ${sc.level} 🎥`);
+}
 
-  setToast(true, `❌ ${reason}`, true, "bad");
+function upgradeGlobal(key){
+  const map = {
+    ticketLv:{ base:120, pow:1.45, label:"Ticket Counter" },
+    snackLv:{ base:110, pow:1.45, label:"Snack Stall" },
+    decorLv:{ base:140, pow:1.55, label:"Decorations" },
+    soundLv:{ base:160, pow:1.55, label:"Sound System" },
+  };
+  const meta = map[key];
+  const lv = save[key];
+  const cost = Math.floor(meta.base * Math.pow(meta.pow, lv-1));
+  if(!spendCash(cost)){
+    toast("Not enough cash for this upgrade.");
+    return;
+  }
+  save[key]++;
+  // small immediate satisfaction boost
+  if(key==="decorLv"){ save.happiness = clamp(save.happiness + 3,0,100); }
+  if(key==="soundLv"){ save.happiness = clamp(save.happiness + 2,0,100); }
+  persist();
+  render();
+  toast(`${meta.label} upgraded to Lv ${save[key]} ✅`);
+}
 
-  updateRecords();
-  saveState();
-  updateHUD();
+function hireStaff(key){
+  const st = STAFF.find(s=>s.key===key);
+  if(!st) return;
+  const lv = save.staff[key];
+  const cost = Math.floor(st.baseCost * Math.pow(1.6, lv));
+  if(!spendCash(cost)){
+    toast("Not enough cash to hire/upgrade staff.");
+    return;
+  }
+  save.staff[key] = lv + 1;
+  persist();
+  render();
+  toast(`${st.name} upgraded to Lv ${save.staff[key]} 👥`);
+}
 
-  if(game.style !== "zen" && game.lives <= 0){
-    endGame(false);
+function upgradeTransport(){
+  if(save.transportId >= TRANSPORT.length-1){
+    toast("Transport is already maxed.");
+    return;
+  }
+  const nextId = save.transportId + 1;
+  const cost = Math.floor(260 * Math.pow(1.75, nextId-1));
+  if(!spendCash(cost)){
+    toast("Not enough cash to upgrade transport.");
+    return;
+  }
+  save.transportId = nextId;
+  persist();
+  render();
+  toast(`Transport upgraded to: ${transport().name} 🛥️`);
+}
+
+function selectIsland(id){
+  if(!save.unlockedIslands[id]){
+    toast("This island is locked. Increase reputation ⭐");
+    return;
+  }
+  save.islandId = id;
+  // island change gently refreshes metrics
+  save.cleanliness = clamp(save.cleanliness - 2, 0, 100);
+  save.happiness   = clamp(save.happiness - 1, 0, 100);
+  persist();
+  render();
+}
+
+function startEvent(eventId){
+  // If event manager exists, extend duration and reward slightly
+  const ev = EVENTS.find(e=>e.id===eventId);
+  if(!ev) return;
+
+  if(save.activeEventId !== null && Date.now() < save.eventEndsAt){
+    toast("An event is already active.");
     return;
   }
 
-  // daily still continues unless out of lives
-  if(game.mode==="daily") game.qIndex++;
-
-  beginRound();
-}
-
-function updateRecords(){
-  if(game.score > state.stats.highScore) state.stats.highScore = game.score;
-  if(game.level > state.stats.highLevel) state.stats.highLevel = game.level;
-
-  if(game.mode==="daily"){
-    const d = todayKey();
-    const best = state.stats.dailyBestByDate[d] || 0;
-    if(game.score > best) state.stats.dailyBestByDate[d] = game.score;
-  }
-  updateBestUI();
-}
-
-function endGame(completedDaily){
-  game.isRunning = false;
-  stopTimer();
-
-  const acc = accuracyStr(game.correct, game.answered);
-  const best = state.stats.highScore || 0;
-
-  ui.overScore.textContent = game.score;
-  ui.overLevel.textContent = game.level;
-  ui.overAcc.textContent = acc;
-  ui.overBest.textContent = best;
-
-  let msg = `Score <b>${game.score}</b> • Level <b>${game.level}</b> • Accuracy <b>${acc}</b>.`;
-  if(game.mode==="daily"){
-    const d = todayKey();
-    const dailyBest = state.stats.dailyBestByDate[d] || 0;
-    msg += `<br>Daily: ${completedDaily ? "Completed" : "Ended early"} • Today best: <b>${dailyBest}</b>.`;
-  }
-  ui.overText.innerHTML = msg;
-
-  ui.overOverlay.classList.add("show");
-  saveState();
-}
-
-/* =========================
-   Toast
-========================= */
-let toastTimer = null;
-function setToast(show, html="", autoHide=true, kind="good"){
-  clearTimeout(toastTimer);
-  if(!show){
-    ui.toast.classList.remove("show");
+  // Optional: spend pearls to start (keeps it meaningful)
+  const pearlCost = 2;
+  if(save.pearls < pearlCost){
+    toast(`Need ${pearlCost} Pearls 🐚 to start an event. Watch an ad or earn more.`);
     return;
   }
-  ui.toastBadge.textContent = (kind==="good") ? "✓" : "!";
-  ui.toastBadge.className = "badge " + (kind==="good" ? "good" : "bad");
-  ui.toastMsg.innerHTML = html;
-  ui.toast.classList.add("show");
+  save.pearls -= pearlCost;
 
-  if(autoHide){
-    toastTimer = setTimeout(()=>ui.toast.classList.remove("show"), 1200);
+  const mgrLv = save.staff.event;
+  const extra = 1 + mgrLv * 0.12;
+  save.activeEventId = eventId;
+  save.eventEndsAt = Date.now() + Math.floor(ev.durationSec * 1000 * extra);
+
+  persist();
+  render();
+  toast(`${ev.name} started! 🎉`);
+}
+
+/* =========================
+   OFFLINE EARNINGS
+========================= */
+function handleOffline(){
+  const now = Date.now();
+  const last = save.lastSeenAt || now;
+  const diffSec = Math.max(0, (now-last)/1000);
+
+  if(diffSec < 8) return;
+
+  // cap offline at 6 hours unless manager exists
+  const managerLv = save.staff.floor;
+  const capSec = managerLv > 0 ? 12*3600 : 6*3600;
+  const effective = Math.min(diffSec, capSec);
+
+  // offline efficiency
+  const eff = managerLv > 0 ? clamp(0.45 + managerLv*0.06, 0.45, 0.85) : 0.35;
+
+  const earned = totalIncomePerSec() * effective * eff;
+  const repEarned = repGainPerSec() * effective * (0.65);
+
+  save.cash += earned;
+  save.rep += repEarned;
+
+  // minor metric decay while away
+  save.cleanliness = clamp(save.cleanliness - effective/1200, 0, 100);
+  save.happiness = clamp(save.happiness - effective/1800, 0, 100);
+
+  checkIslandUnlocks();
+  persist();
+
+  toast(`While you were away (${Math.floor(effective/60)}m): +${fmt(earned)} cash 💵, +${repEarned.toFixed(0)} rep ⭐`);
+}
+
+/* =========================
+   LOOP (TICK)
+========================= */
+function tick(){
+  // event expire
+  if(save.activeEventId !== null && Date.now() >= save.eventEndsAt){
+    const ev = EVENTS.find(e=>e.id===save.activeEventId);
+    const reward = ev ? (ev.pearlReward + save.staff.event) : 2;
+    addPearls(reward);
+    save.activeEventId = null;
+    save.eventEndsAt = 0;
+    toast(`Event ended! Reward: +${reward} Pearls 🐚`);
+  }
+
+  // salaries (per tick = every 3 sec)
+  const salaryPerMin = staffCostPerMin();
+  const salaryPerTick = salaryPerMin / 20; // 60 sec / 3 sec = 20 ticks
+  save.cash -= salaryPerTick;
+  if(save.cash < 0) save.cash = 0;
+
+  // income
+  const income = totalIncomePerSec() * 3;
+  addCash(income);
+
+  // rep
+  save.rep += repGainPerSec() * 3;
+
+  // metrics
+  decayMetrics();
+  applyStaffToMetrics();
+
+  // unlocks
+  checkIslandUnlocks();
+
+  // auto-collect perk: floor manager
+  if(save.staff.floor > 0){
+    // small extra efficiency (already in formula via capacity; here a bit more)
+    save.cash += totalIncomePerSec() * (0.15 + save.staff.floor*0.03);
+  }
+
+  persist();
+  render(false);
+}
+
+let loop = null;
+
+/* =========================
+   RENDERING
+========================= */
+function islandTagClass(){
+  if(save.unlockedIslands.every(Boolean)) return "good";
+  const nxt = nextLockedIsland();
+  if(!nxt) return "good";
+  const pct = clamp(save.rep / nxt.unlock, 0, 1);
+  if(pct >= 0.8) return "warn";
+  return "";
+}
+
+function renderScene(){
+  // change sign
+  $("cinemaSign").textContent = island().theme.toUpperCase() + " CINEMA";
+
+  // set island tag
+  const nxt = nextLockedIsland();
+  const msg = nxt ? `Next: ${nxt.name} at ⭐ ${nxt.unlock}` : "All islands unlocked ✅";
+  $("islandTag").className = "tag " + islandTagClass();
+  $("islandTag").textContent = "🏝️ " + island().name + " • " + msg;
+
+  // event tag
+  const ev = activeEvent();
+  $("eventName").textContent = ev ? ev.name : "None";
+  $("eventTag").className = "tag " + (ev ? "good" : "");
+}
+
+function renderPills(){
+  $("cash").textContent = fmt(save.cash);
+  $("pearls").textContent = fmt(save.pearls);
+  $("rep").textContent = fmt(save.rep);
+  $("happy").textContent = Math.round(save.happiness);
+  $("clean").textContent = Math.round(save.cleanliness);
+  $("season").textContent = season().name;
+
+  $("ips").textContent = totalIncomePerSec().toFixed(1);
+  $("cust").textContent = Math.round(customerRatePerMin());
+}
+
+function renderIslandsList(){
+  const el = $("islandsList");
+  el.innerHTML = "";
+  for(const isl of ISLANDS){
+    const locked = !save.unlockedIslands[isl.id];
+    const btnText = locked ? `Locked (⭐ ${isl.unlock})` : "Travel";
+    const can = !locked;
+
+    const node = document.createElement("div");
+    node.className = "item";
+    node.innerHTML = `
+      <div class="left">
+        <div class="name">🏝️ ${isl.name}</div>
+        <div class="desc">${isl.theme} • Guests: ${isl.guests} • Income x${isl.mult.toFixed(2)}</div>
+        <div class="bar" style="margin-top:8px">
+          <div style="width:${locked ? clamp((save.rep/isl.unlock)*100,0,100) : 100}%; background:${locked ? "rgba(255,209,102,.9)" : "rgba(46,242,193,.9)"}"></div>
+        </div>
+        <div class="small muted" style="margin-top:6px">${locked ? "Earn reputation to unlock." : "Unlocked ✅"}</div>
+      </div>
+      <div class="right">
+        <div class="price">${locked ? "—" : "Ready"}</div>
+        <button class="btn ${can?"":"ghost"}" ${can?"":"disabled"}> ${btnText} </button>
+      </div>
+    `;
+    node.querySelector("button").onclick = ()=>selectIsland(isl.id);
+    el.appendChild(node);
+  }
+}
+
+function renderUpgradesList(){
+  const el = $("upgradesList");
+  el.innerHTML = "";
+
+  const upgradeItems = [
+    { key:"ticketLv", label:"🎟️ Ticket Counter", desc:"Higher ticket revenue.", base:120, pow:1.45 },
+    { key:"snackLv", label:"🍿 Snack Stall", desc:"More snack income.", base:110, pow:1.45 },
+    { key:"decorLv", label:"✨ Decorations", desc:"Boost happiness + reputation.", base:140, pow:1.55 },
+    { key:"soundLv", label:"🔊 Sound System", desc:"Boost happiness + movie performance.", base:160, pow:1.55 },
+  ];
+
+  for(const u of upgradeItems){
+    const lv = save[u.key];
+    const cost = Math.floor(u.base * Math.pow(u.pow, lv-1));
+    const node = document.createElement("div");
+    node.className = "item";
+    node.innerHTML = `
+      <div class="left">
+        <div class="name">${u.label} <span class="muted">Lv ${lv}</span></div>
+        <div class="desc">${u.desc}</div>
+      </div>
+      <div class="right">
+        <div class="price">💵 ${fmt(cost)}</div>
+        <button class="btn secondary">Upgrade</button>
+      </div>
+    `;
+    node.querySelector("button").onclick = ()=>upgradeGlobal(u.key);
+    el.appendChild(node);
+  }
+
+  // transport
+  const t = transport();
+  const next = TRANSPORT[Math.min(save.transportId+1, TRANSPORT.length-1)];
+  const atMax = save.transportId >= TRANSPORT.length-1;
+  const cost = atMax ? 0 : Math.floor(260 * Math.pow(1.75, (save.transportId+1)-1));
+  const node = document.createElement("div");
+  node.className="item";
+  node.innerHTML = `
+    <div class="left">
+      <div class="name">🛥️ Transport <span class="muted">${t.name}</span></div>
+      <div class="desc">Increases customers & capacity. Next: ${atMax ? "MAX" : next.name}</div>
+    </div>
+    <div class="right">
+      <div class="price">${atMax ? "MAX" : "💵 "+fmt(cost)}</div>
+      <button class="btn secondary" ${atMax?"disabled":""}>Upgrade</button>
+    </div>
+  `;
+  node.querySelector("button").onclick = ()=>upgradeTransport();
+  el.appendChild(node);
+
+  // movie licensing list
+  for(const mv of MOVIES){
+    const owned = !!save.licensed[mv.id];
+    const node2 = document.createElement("div");
+    node2.className = "item";
+    node2.innerHTML = `
+      <div class="left">
+        <div class="name">🎞️ License: ${mv.name} <span class="muted">(${mv.genre})</span></div>
+        <div class="desc">Popularity x${mv.basePop.toFixed(2)} • Best on: ${mv.pref.map(i=>ISLANDS[i].name.split(" ")[0]).join(", ")}</div>
+      </div>
+      <div class="right">
+        <div class="price">${owned ? "Owned ✅" : "💵 "+fmt(mv.cost)}</div>
+        <button class="btn ${owned?"ghost":"secondary"}" ${owned?"disabled":""}>${owned?"Owned":"Buy"}</button>
+      </div>
+    `;
+    node2.querySelector("button").onclick = ()=>buyMovie(mv.id);
+    el.appendChild(node2);
+  }
+}
+
+function renderStaffList(){
+  const el = $("staffList");
+  el.innerHTML = "";
+  for(const st of STAFF){
+    const lv = save.staff[st.key];
+    const cost = Math.floor(st.baseCost * Math.pow(1.6, lv));
+    const node = document.createElement("div");
+    node.className="item";
+    node.innerHTML = `
+      <div class="left">
+        <div class="name">👥 ${st.name} <span class="muted">Lv ${lv}</span></div>
+        <div class="desc">${st.desc}</div>
+        <div class="small muted" style="margin-top:6px">Salary: 💵 ${st.salaryPerMin}/min per level</div>
+      </div>
+      <div class="right">
+        <div class="price">💵 ${fmt(cost)}</div>
+        <button class="btn secondary">Hire/Upgrade</button>
+      </div>
+    `;
+    node.querySelector("button").onclick = ()=>hireStaff(st.key);
+    el.appendChild(node);
+  }
+}
+
+function renderEventsList(){
+  const el = $("eventsList");
+  el.innerHTML = "";
+  const ev = activeEvent();
+  const activeText = ev ? `Active: ${ev.name}` : "No active event";
+  const activeLeft = ev ? Math.max(0, Math.floor((save.eventEndsAt-Date.now())/1000)) : 0;
+
+  const head = document.createElement("div");
+  head.className="miniChart";
+  head.innerHTML = `
+    <div>
+      <div class="label">Status</div>
+      <div class="val">${activeText}</div>
+    </div>
+    <div>
+      <div class="label">Time left</div>
+      <div class="val">${ev ? activeLeft+"s" : "—"}</div>
+    </div>
+  `;
+  el.appendChild(head);
+
+  for(const e of EVENTS){
+    const node = document.createElement("div");
+    node.className="item";
+    node.innerHTML = `
+      <div class="left">
+        <div class="name">🎉 ${e.name}</div>
+        <div class="desc">Income x${e.bonus.toFixed(2)} • Rep x${e.repBoost.toFixed(2)} • Duration ${e.durationSec}s</div>
+        <div class="small muted" style="margin-top:6px">Costs 2 Pearls to start. Reward: +${e.pearlReward} Pearls (more with Event Manager).</div>
+      </div>
+      <div class="right">
+        <div class="price">🐚 2</div>
+        <button class="btn">Start</button>
+      </div>
+    `;
+    node.querySelector("button").onclick = ()=>startEvent(e.id);
+    el.appendChild(node);
+  }
+}
+
+function renderScreens(){
+  const el = $("screensList");
+  el.innerHTML = "";
+  for(const sc of save.screens){
+    const st = SCREEN_TYPES[sc.id];
+    const mv = MOVIES.find(m=>m.id===sc.movieId) || MOVIES[0];
+    const income = screenIncomePerSec(sc);
+    const cost = Math.floor((120 * (1+sc.id*0.2)) * Math.pow(1.55, sc.level-1));
+    const pref = mv.pref.includes(save.islandId);
+    const prefTag = pref ? `<span class="tag good">Best pick</span>` : `<span class="tag warn">Not ideal</span>`;
+
+    // movie options
+    const opts = MOVIES.map(m=>{
+      const owned = !!save.licensed[m.id];
+      const mark = owned ? "" : " (lock)";
+      return `<option value="${m.id}" ${m.id===sc.movieId?"selected":""} ${owned?"":"disabled"}>${m.name}${mark}</option>`;
+    }).join("");
+
+    const node = document.createElement("div");
+    node.className="item";
+    node.innerHTML = `
+      <div class="left">
+        <div class="name">🎥 ${st.name} <span class="muted">Lv ${sc.level}</span></div>
+        <div class="desc">Movie: <strong>${mv.name}</strong> • ${prefTag}</div>
+        <div class="small muted" style="margin-top:6px">Income/sec: <strong>${income.toFixed(1)}</strong></div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="small muted">Schedule:</span>
+          <select data-screen="${sc.id}" style="padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:#fff">
+            ${opts}
+          </select>
+        </div>
+      </div>
+      <div class="right">
+        <div class="price">💵 ${fmt(cost)}</div>
+        <button class="btn secondary">Upgrade</button>
+      </div>
+    `;
+
+    node.querySelector("button").onclick = ()=>upgradeScreen(sc.id);
+    node.querySelector("select").onchange = (e)=>setScreenMovie(sc.id, Number(e.target.value));
+
+    el.appendChild(node);
+  }
+}
+
+function renderDashboard(){
+  const bars = $("dashBars");
+  bars.innerHTML = "";
+
+  const next = nextLockedIsland();
+  const unlockText = next ? `${fmt(save.rep)} / ${fmt(next.unlock)} (next: ${next.name})` : "All unlocked ✅";
+  $("unlockProgress").textContent = unlockText;
+  $("transportName").textContent = transport().name;
+
+  const daily = totalIncomePerSec() * 86400;
+  $("dailyIncome").textContent = "💵 " + fmt(daily);
+  $("staffCost").textContent = "💵 " + staffCostPerMin().toFixed(1);
+
+  const metrics = [
+    { label:"Happiness", val:save.happiness, color:"rgba(46,242,193,.9)" },
+    { label:"Cleanliness", val:save.cleanliness, color:"rgba(255,209,102,.9)" },
+    { label:"Reputation progress", val: next ? clamp((save.rep/next.unlock)*100,0,100) : 100, color:"rgba(0,255,213,.85)" },
+    { label:"Customer flow", val: clamp((customerRatePerMin()/40)*100,0,100), color:"rgba(255,255,255,.7)" },
+  ];
+
+  for(const m of metrics){
+    const node = document.createElement("div");
+    node.className="miniChart";
+    node.innerHTML = `
+      <div>
+        <div class="label">${m.label}</div>
+        <div class="val">${m.val.toFixed(0)}%</div>
+      </div>
+      <div class="bar">
+        <div style="width:${m.val}%; background:${m.color}"></div>
+      </div>
+    `;
+    bars.appendChild(node);
+  }
+}
+
+function render(full=true){
+  renderPills();
+  renderScene();
+  renderScreens();
+  renderDashboard();
+
+  // Only re-render long lists when full render requested (faster)
+  if(full){
+    renderIslandsList();
+    renderUpgradesList();
+    renderStaffList();
+    renderEventsList();
   }
 }
 
 /* =========================
-   Share Score Card (PNG)
+   TABS
 ========================= */
-function shareCard(fromStats=false){
-  const W = 1080, H = 1920;
-  const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d");
-
-  // background
-  const g = ctx.createRadialGradient(W*0.5, H*0.12, 10, W*0.5, H*0.12, H*0.9);
-  g.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue("--bg1").trim() || "#061a33");
-  g.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue("--bg0").trim() || "#020617");
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,W,H);
-
-  // soft glow
-  ctx.fillStyle = "rgba(30,144,255,0.10)";
-  ctx.beginPath();
-  ctx.arc(W*0.5, H*0.18, 420, 0, Math.PI*2);
-  ctx.fill();
-
-  // logo box
-  roundRect(ctx, W*0.12, H*0.10, W*0.20, W*0.20, 48);
-  ctx.fillStyle = "rgba(30,144,255,0.14)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(99,179,255,0.30)";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(99,179,255,0.95)";
-  ctx.font = "900 88px ui-sans-serif,system-ui";
-  ctx.fillText("N2", W*0.165, H*0.22);
-
-  // title
-  ctx.fillStyle = "rgba(230,240,255,0.98)";
-  ctx.font = "900 74px ui-sans-serif,system-ui";
-  ctx.fillText("Brain Training", W*0.12, H*0.34);
-
-  ctx.fillStyle = "rgba(155,183,214,0.95)";
-  ctx.font = "600 38px ui-sans-serif,system-ui";
-  ctx.fillText("Endless • Logic • Math • Words", W*0.12, H*0.39);
-
-  // stats card
-  const sx = W*0.12, sy = H*0.46, sw = W*0.76, sh = H*0.36;
-  roundRect(ctx, sx, sy, sw, sh, 44);
-  ctx.fillStyle = "rgba(7,26,47,0.86)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(99,179,255,0.22)";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  const pad = 58;
-  const line = 92;
-
-  const hs = state.stats.highScore || 0;
-  const hl = state.stats.highLevel || 1;
-  const plays = state.stats.plays || 0;
-  const accAll = accuracyStr(state.stats.correct, state.stats.answered);
-
-  const liveScore = game ? game.score : hs;
-  const liveLevel = game ? game.level : hl;
-  const liveAcc = game ? accuracyStr(game.correct, game.answered) : accAll;
-
-  ctx.fillStyle = "rgba(230,240,255,0.96)";
-  ctx.font = "800 54px ui-sans-serif,system-ui";
-  ctx.fillText(fromStats ? "Your Stats" : "Session Result", sx+pad, sy+pad);
-
-  ctx.fillStyle = "rgba(155,183,214,0.98)";
-  ctx.font = "700 44px ui-sans-serif,system-ui";
-  ctx.fillText(`Score:  ${liveScore}`, sx+pad, sy+pad+line);
-  ctx.fillText(`Level:  ${liveLevel}`, sx+pad, sy+pad+line*2);
-  ctx.fillText(`Accuracy:  ${liveAcc}`, sx+pad, sy+pad+line*3);
-
-  ctx.fillStyle = "rgba(99,179,255,0.95)";
-  ctx.font = "800 44px ui-sans-serif,system-ui";
-  ctx.fillText(`High Score:  ${hs}`, sx+pad, sy+pad+line*4);
-  ctx.fillText(`High Level:  ${hl}`, sx+pad, sy+pad+line*5);
-
-  ctx.fillStyle = "rgba(155,183,214,0.92)";
-  ctx.font = "650 40px ui-sans-serif,system-ui";
-  ctx.fillText(`Total Plays:  ${plays}`, sx+pad, sy+pad+line*6);
-
-  // footer
-  ctx.fillStyle = "rgba(155,183,214,0.92)";
-  ctx.font = "600 34px ui-sans-serif,system-ui";
-  ctx.fillText(`Generated by N2 • ${todayKey()}`, W*0.12, H*0.90);
-
-  // download
-  const a = document.createElement("a");
-  a.download = `N2_${fromStats ? "stats" : "score"}_${todayKey()}.png`;
-  a.href = canvas.toDataURL("image/png");
-  a.click();
-}
-
-function roundRect(ctx, x, y, w, h, r){
-  const rr = Math.min(r, w/2, h/2);
-  ctx.beginPath();
-  ctx.moveTo(x+rr, y);
-  ctx.arcTo(x+w, y, x+w, y+h, rr);
-  ctx.arcTo(x+w, y+h, x, y+h, rr);
-  ctx.arcTo(x, y+h, x, y, rr);
-  ctx.arcTo(x, y, x+w, y, rr);
-  ctx.closePath();
-}
-
-/* =========================
-   Settings + Stats UI
-========================= */
-function openSettings(){
-  // populate controls
-  $("#setStyle").value = state.settings.style;
-  $("#setTimer").value = String(state.settings.baseTimer);
-  $("#setTheme").value = state.settings.theme;
-  $("#setCurve").value = state.settings.curve;
-
-  setSwitch($("#swSound"), state.settings.sound);
-  setSwitch($("#swHaptics"), state.settings.haptics);
-
-  ui.settingsOverlay.classList.add("show");
-}
-function closeSettings(){
-  ui.settingsOverlay.classList.remove("show");
-}
-
-function openStats(){
-  updateStatsPanel();
-  ui.statsOverlay.classList.add("show");
-}
-function closeStats(){
-  ui.statsOverlay.classList.remove("show");
-}
-
-function updateStatsPanel(){
-  $("#stHighScore").textContent = state.stats.highScore || 0;
-  $("#stHighLevel").textContent = state.stats.highLevel || 1;
-  $("#stPlays").textContent = state.stats.plays || 0;
-  $("#stCorrect").textContent = state.stats.correct || 0;
-  $("#stAnswered").textContent = state.stats.answered || 0;
-  $("#stAcc").textContent = accuracyStr(state.stats.correct, state.stats.answered);
-  $("#stDailyBest").textContent = (state.stats.dailyBestByDate[todayKey()] || 0);
-}
-
-function setSwitch(el, on){
-  el.classList.toggle("on", !!on);
-  el.setAttribute("aria-checked", on ? "true" : "false");
-}
-
-function toggleSwitch(el){
-  const on = !el.classList.contains("on");
-  setSwitch(el, on);
-  return on;
-}
-
-/* =========================
-   Events
-========================= */
-$("#tileLogic").onclick = ()=> startEndless("logic");
-$("#tileMath").onclick  = ()=> startEndless("math");
-$("#tileWord").onclick  = ()=> startEndless("word");
-$("#tileDaily").onclick = ()=> startDaily();
-$("#btnQuickStart").onclick = ()=> startEndless("mix");
-
-$("#btnSubmit").onclick = ()=> submit();
-$("#btnPause").onclick = ()=> pauseToggle();
-$("#btnExit").onclick = ()=> { stopTimer(); game && (game.isRunning=false); showMenu(); };
-$("#btnShare").onclick = ()=> shareCard(false);
-
-ui.answer.addEventListener("keydown", (e)=>{
-  if(e.key === "Enter"){ e.preventDefault(); submit(); }
+$("tabs").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button[data-tab]");
+  if(!btn) return;
+  [...$("tabs").querySelectorAll("button")].forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  const tab = btn.dataset.tab;
+  ["islands","upgrades","staff","events","dashboard"].forEach(t=>{
+    $("tab-"+t).style.display = (t===tab) ? "" : "none";
+  });
 });
 
-$("#btnSettings").onclick = openSettings;
-$("#btnStats").onclick = openStats;
-
-// close modals on outside tap
-ui.settingsOverlay.addEventListener("click",(e)=>{ if(e.target===ui.settingsOverlay) closeSettings(); });
-ui.statsOverlay.addEventListener("click",(e)=>{ if(e.target===ui.statsOverlay) closeStats(); });
-
-// settings switches
-$("#swSound").onclick = ()=>{
-  const on = toggleSwitch($("#swSound"));
-  state.settings.sound = on;
-  saveState();
-  if(on) beep(740,0.05,"sine",0.06);
-};
-$("#swHaptics").onclick = ()=>{
-  const on = toggleSwitch($("#swHaptics"));
-  state.settings.haptics = on;
-  saveState();
-  if(on) vibrate(25);
+/* =========================
+   EXPORT / IMPORT / RESET
+========================= */
+$("btnExport").onclick = ()=>{
+  const data = JSON.stringify(save, null, 2);
+  navigator.clipboard?.writeText(data).then(()=>{
+    toast("Save copied to clipboard ✅ Paste it somewhere safe.");
+  }).catch(()=>{
+    toast("Copy failed. Manually copy from prompt.", "COPY");
+    prompt("Copy your save JSON:", data);
+  });
 };
 
-$("#btnSaveSettings").onclick = ()=>{
-  state.settings.style = $("#setStyle").value;
-  state.settings.baseTimer = +$("#setTimer").value;
-  state.settings.theme = $("#setTheme").value;
-  state.settings.curve = $("#setCurve").value;
-
-  // switches already updated in click handlers, but keep consistent:
-  state.settings.sound = $("#swSound").classList.contains("on");
-  state.settings.haptics = $("#swHaptics").classList.contains("on");
-
-  applyTheme(state.settings.theme);
-  saveState();
-
-  // if game running, apply immediately (without breaking round)
-  if(game && game.isRunning){
-    game.style = state.settings.style;
-    game.baseTimer = +state.settings.baseTimer;
-    game.curve = state.settings.curve;
-    game.lives = (game.style==="classic") ? Math.max(game.lives, 3) : (game.style==="hardcore" ? Math.min(game.lives,1) : game.lives);
-    updateHUD();
+$("btnImport").onclick = ()=>{
+  const raw = prompt("Paste your save JSON here:");
+  if(!raw) return;
+  try{
+    const obj = JSON.parse(raw);
+    const base = defaultSave();
+    save = deepMerge(base, obj);
+    persist();
+    render(true);
+    toast("Save imported ✅");
+  }catch{
+    toast("Invalid JSON. Import failed.");
   }
-
-  closeSettings();
-  setToast(true, "✅ Settings saved", true, "good");
 };
 
-$("#btnResetStats").onclick = ()=>{
-  state.stats = structuredClone(defaultState.stats);
-  saveState();
-  updateStatsPanel();
-  updateBestUI();
-  setToast(true, "🗑 Stats reset", true, "bad");
+$("btnReset").onclick = ()=>{
+  if(confirm("Reset game? This will erase your progress.")){
+    save = defaultSave();
+    persist();
+    render(true);
+    toast("Game reset ✅");
+  }
 };
-
-// stats modal actions
-$("#btnCloseStats").onclick = closeStats;
-$("#btnShareStats").onclick = ()=> shareCard(true);
-
-// game over panel actions
-$("#btnPlayAgain").onclick = ()=>{
-  ui.overOverlay.classList.remove("show");
-  // restart same mode/game type
-  if(!game) return showMenu();
-  const restartDaily = (game.mode==="daily");
-  const lastType = game.gameType;
-  if(restartDaily) startDaily();
-  else startEndless(lastType);
-};
-$("#btnBackMenu").onclick = ()=> {
-  ui.overOverlay.classList.remove("show");
-  showMenu();
-};
-
-// basic init
-updateBestUI();
-showMenu();
 
 /* =========================
-   Helpers
+   BUTTONS
 ========================= */
-function $(sel){ return document.querySelector(sel); }
+$("btnCollect").onclick = collectNow;
+$("btnWatchAd").onclick = watchAd;
+$("btnNextSeason").onclick = nextSeason;
+
+/* =========================
+   STARTUP + OFFLINE
+========================= */
+handleOffline();
+render(true);
+
+/* =========================
+   MAIN LOOP
+========================= */
+if(loop) clearInterval(loop);
+loop = setInterval(tick, 3000);
 </script>
 </body>
 </html>
