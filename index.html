@@ -1,1338 +1,759 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Island Cinema Empire</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MovieBox — Stream Free</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Netflix+Sans:wght@400;500;700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --bg1:#02111b;
-    --bg2:#072e45;
-    --panel:rgba(255,255,255,.08);
-    --panel2:rgba(255,255,255,.06);
-    --stroke:rgba(255,255,255,.12);
-    --text:#f2fbff;
-    --muted:rgba(255,255,255,.75);
-    --good:#2ef2c1;
-    --warn:#ffd166;
-    --bad:#ff5a7a;
-    --ink:#001018;
-    --btn:#00ffd5;
-    --btn2:#ffd166;
-    --shadow:0 14px 40px rgba(0,0,0,.35);
-    --radius:16px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    color:var(--text);
-    background:linear-gradient(180deg,var(--bg1),var(--bg2));
-    min-height:100vh;
-  }
-  header{
-    position:sticky; top:0; z-index:10;
-    background:rgba(0,0,0,.55);
-    backdrop-filter: blur(10px);
-    border-bottom:1px solid var(--stroke);
-    padding:12px 12px 10px;
-  }
-  .title{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:10px;
-  }
-  .title h1{
-    margin:0;
-    font-size:16px;
-    letter-spacing:.2px;
-  }
-  .pillrow{
-    display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;
-  }
-  .pill{
-    background:rgba(255,255,255,.08);
-    border:1px solid var(--stroke);
-    padding:8px 10px;
-    border-radius:999px;
-    font-size:13px;
-    display:flex; gap:8px; align-items:center;
-  }
-  .pill strong{font-weight:800}
-  .wrap{max-width:980px;margin:0 auto;padding:12px}
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:12px;
-  }
-  @media(min-width:880px){
-    .grid{
-      grid-template-columns: 1.1fr .9fr;
-      align-items:start;
-    }
-  }
-  .card{
-    background:var(--panel);
-    border:1px solid var(--stroke);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    overflow:hidden;
-  }
-  .card .hd{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    padding:12px 12px 10px;
-    border-bottom:1px solid var(--stroke);
-    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
-  }
-  .card .hd .k{font-weight:800}
-  .card .bd{padding:12px}
-  .row{display:flex; gap:10px; flex-wrap:wrap}
-  .col{flex:1; min-width:210px}
-  .muted{color:var(--muted)}
-  .small{font-size:12px}
-  .btn{
-    border:none;
-    cursor:pointer;
-    padding:10px 12px;
-    border-radius:14px;
-    font-weight:800;
-    letter-spacing:.1px;
-    background:var(--btn);
-    color:var(--ink);
-    box-shadow:0 10px 18px rgba(0,0,0,.22);
-  }
-  .btn.secondary{background:var(--btn2); color:var(--ink)}
-  .btn.ghost{
-    background:transparent; color:var(--text);
-    border:1px solid var(--stroke);
-    box-shadow:none;
-  }
-  .btn:active{transform:translateY(1px)}
-  .btn[disabled]{opacity:.45; cursor:not-allowed; transform:none}
-  .tag{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:6px 10px;
-    border-radius:999px;
-    border:1px solid var(--stroke);
-    background:rgba(0,0,0,.15);
-    font-size:12px;
-  }
-  .tag.good{border-color:rgba(46,242,193,.35)}
-  .tag.warn{border-color:rgba(255,209,102,.35)}
-  .tag.bad{border-color:rgba(255,90,122,.35)}
-  .scene{
-    position:relative;
-    height:250px;
-    border-radius:18px;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(255,255,255,.15), transparent 35%),
-      linear-gradient(180deg, #1ccad8, #0ea5a5 55%, #0d7c86);
-    overflow:hidden;
-    border:1px solid var(--stroke);
-  }
-  .lagoon{
-    position:absolute; inset:auto -20% 0 -20%;
-    height:120px;
-    background:linear-gradient(90deg, rgba(0,255,213,.18), rgba(255,255,255,.08), rgba(0,255,213,.16));
-    filter:blur(0.5px);
-    transform:skewX(-8deg);
-  }
-  .sand{
-    position:absolute; left:-10%; right:-10%;
-    bottom:0; height:92px;
-    background:linear-gradient(180deg,#ffd27f,#fbbf5b);
-    border-top-left-radius:90px;
-    border-top-right-radius:90px;
-    opacity:.92;
-  }
-  .cinema{
-    position:absolute;
-    bottom:62px;
-    left:50%;
-    transform:translateX(-50%);
-    width:170px;
-    height:102px;
-    border-radius:16px;
-    background:linear-gradient(180deg,#111,#08111a);
-    border:1px solid rgba(255,255,255,.12);
-    box-shadow:0 20px 40px rgba(0,0,0,.3);
-  }
-  .sign{
-    position:absolute;
-    top:10px; left:50%;
-    transform:translateX(-50%);
-    width:140px; height:26px;
-    border-radius:10px;
-    background:rgba(0,255,213,.16);
-    border:1px solid rgba(0,255,213,.35);
-    display:flex; align-items:center; justify-content:center;
-    font-size:12px; font-weight:900;
-    letter-spacing:.2px;
-  }
-  .door{
-    position:absolute; bottom:12px; left:50%;
-    transform:translateX(-50%);
-    width:44px; height:52px;
-    border-radius:12px;
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.12);
-  }
-  .spark{
-    position:absolute; top:10px; right:12px;
-    width:10px; height:10px; border-radius:50%;
-    background:rgba(255,209,102,.9);
-    box-shadow:0 0 0 6px rgba(255,209,102,.18);
-    animation:pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes pulse{
-    0%,100%{transform:scale(1);opacity:.95}
-    50%{transform:scale(1.18);opacity:.65}
-  }
-  .walker{
-    position:absolute;
-    bottom:18px;
-    width:22px; height:22px;
-    border-radius:50%;
-    background:#fff;
-    box-shadow:0 10px 20px rgba(0,0,0,.25);
-    animation:walk 7.2s linear infinite;
-    opacity:.95;
-  }
-  .walker:nth-child(1){animation-duration:7.2s; animation-delay:.1s}
-  .walker:nth-child(2){animation-duration:6.1s; animation-delay:1.4s; background:#eafff9}
-  .walker:nth-child(3){animation-duration:8.3s; animation-delay:2.7s; background:#fff0f5}
-  @keyframes walk{
-    from{left:-10%}
-    to{left:110%}
+  :root {
+    --red: #E50914;
+    --red-hover: #f40612;
+    --dark: #141414;
+    --dark2: #181818;
+    --dark3: #232323;
+    --card-bg: #1f1f1f;
+    --text: #e5e5e5;
+    --text-muted: #777;
+    --gold: #F5C518;
+    --radius: 4px;
   }
 
-  .list{
-    display:flex; flex-direction:column; gap:10px;
-  }
-  .item{
-    background:var(--panel2);
-    border:1px solid var(--stroke);
-    border-radius:14px;
-    padding:10px;
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    align-items:flex-start;
-  }
-  .item .left{flex:1}
-  .item .name{font-weight:900}
-  .item .desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
-  .item .right{display:flex; flex-direction:column; gap:8px; align-items:flex-end; min-width:150px}
-  .item .right .price{font-weight:900}
-  .bar{
-    height:10px;
-    background:rgba(255,255,255,.08);
-    border:1px solid var(--stroke);
-    border-radius:999px;
-    overflow:hidden;
-  }
-  .bar > div{height:100%}
-  .bars{
-    display:flex; flex-direction:column; gap:8px;
-  }
-  .miniChart{
-    display:grid;
-    grid-template-columns: 1fr 120px;
-    gap:10px;
-    align-items:center;
-    background:rgba(0,0,0,.12);
-    border:1px solid var(--stroke);
-    border-radius:14px;
-    padding:10px;
-  }
-  .miniChart .label{font-size:12px;color:var(--muted)}
-  .miniChart .val{font-weight:900}
-  .toast{
-    position:fixed;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:16px;
-    max-width:680px;
-    width:calc(100% - 22px);
-    background:rgba(0,0,0,.75);
-    border:1px solid rgba(255,255,255,.18);
-    padding:12px;
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    display:none;
-    z-index:20;
-  }
-  .toast.show{display:block}
-  .toast .trow{display:flex; justify-content:space-between; gap:10px; align-items:center}
-  .toast .trow .msg{line-height:1.3}
-  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px}
-  .seg{
-    display:flex; gap:8px; flex-wrap:wrap;
-    margin-top:10px;
-  }
-  .seg button{padding:8px 10px;border-radius:999px}
-  .seg .active{outline:2px solid rgba(0,255,213,.4)}
-  .footerBtns{display:flex; gap:8px; flex-wrap:wrap}
-  .danger{background:var(--bad); color:#fff}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+background: var(–dark);
+color: var(–text);
+font-family: ‘Barlow’, sans-serif;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 4vw;
+height: 68px;
+background: linear-gradient(to bottom, rgba(0,0,0,.95) 0%, transparent 100%);
+transition: background .3s;
+}
+nav.scrolled { background: rgba(20,20,20,.98); box-shadow: 0 2px 12px rgba(0,0,0,.5); }
+
+.nav-logo {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 2rem;
+color: var(–red);
+letter-spacing: 2px;
+text-decoration: none;
+display: flex; align-items: center; gap: 8px;
+}
+.nav-logo span { color: #fff; }
+
+.nav-links { display: flex; gap: 20px; list-style: none; }
+.nav-links a {
+color: #ccc; text-decoration: none; font-size: .85rem;
+font-weight: 500; transition: color .2s; letter-spacing: .5px;
+}
+.nav-links a:hover, .nav-links a.active { color: #fff; }
+
+.nav-right { display: flex; align-items: center; gap: 16px; }
+
+.search-box {
+display: flex; align-items: center; gap: 8px;
+background: rgba(0,0,0,.6);
+border: 1px solid rgba(255,255,255,.25);
+border-radius: 4px; padding: 6px 12px;
+transition: border-color .2s, background .2s;
+}
+.search-box:focus-within { border-color: #fff; background: rgba(0,0,0,.85); }
+.search-box input {
+background: none; border: none; outline: none;
+color: #fff; font-size: .85rem; width: 160px;
+font-family: ‘Barlow’, sans-serif;
+}
+.search-box input::placeholder { color: #999; }
+.search-icon { color: #ccc; font-size: 1rem; }
+
+.btn-primary {
+background: var(–red); color: #fff;
+border: none; border-radius: var(–radius);
+padding: 8px 20px; font-size: .85rem; font-weight: 600;
+cursor: pointer; letter-spacing: .5px;
+transition: background .2s, transform .1s;
+text-decoration: none; display: inline-block;
+}
+.btn-primary:hover { background: var(–red-hover); transform: scale(1.03); }
+
+/* ── HERO ── */
+.hero {
+position: relative; height: 85vh; min-height: 520px;
+display: flex; align-items: flex-end;
+padding: 0 4vw 60px;
+overflow: hidden;
+}
+
+.hero-bg {
+position: absolute; inset: 0;
+background:
+linear-gradient(to right, rgba(20,20,20,.98) 30%, transparent 70%),
+linear-gradient(to top, rgba(20,20,20,.95) 0%, transparent 50%),
+url(‘https://image.tmdb.org/t/p/original/tmU7GeKVybMWFButWEGl2M4GeiP.jpg’) center/cover no-repeat;
+filter: brightness(.75);
+}
+
+.hero-badge {
+display: inline-flex; align-items: center; gap: 6px;
+background: var(–red); color: #fff;
+padding: 4px 10px; border-radius: 3px;
+font-size: .7rem; font-weight: 700; letter-spacing: 1.5px;
+text-transform: uppercase; margin-bottom: 12px;
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 540px; }
+.hero-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: clamp(3rem, 7vw, 5.5rem);
+line-height: .95; letter-spacing: 1px;
+text-shadow: 2px 4px 20px rgba(0,0,0,.7);
+margin-bottom: 16px;
+}
+.hero-meta {
+display: flex; align-items: center; gap: 14px;
+margin-bottom: 14px; font-size: .85rem; color: #aaa;
+}
+.hero-meta .rating { color: var(–gold); font-weight: 700; }
+.hero-meta .year, .hero-meta .runtime { color: #888; }
+.hero-desc {
+font-size: 1rem; color: #ccc; line-height: 1.6;
+margin-bottom: 24px; max-width: 420px;
+display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.btn-play {
+display: inline-flex; align-items: center; gap: 8px;
+background: #fff; color: #000;
+border: none; border-radius: var(–radius);
+padding: 12px 28px; font-size: 1rem; font-weight: 700;
+cursor: pointer; transition: background .2s, transform .1s;
+text-decoration: none;
+}
+.btn-play:hover { background: rgba(255,255,255,.85); transform: scale(1.03); }
+.btn-play svg { width: 20px; height: 20px; }
+
+.btn-info {
+display: inline-flex; align-items: center; gap: 8px;
+background: rgba(109,109,110,.7); color: #fff;
+border: none; border-radius: var(–radius);
+padding: 12px 24px; font-size: 1rem; font-weight: 600;
+cursor: pointer; backdrop-filter: blur(4px);
+transition: background .2s; text-decoration: none;
+}
+.btn-info:hover { background: rgba(109,109,110,.5); }
+
+/* ── GENRE TABS ── */
+.genre-bar {
+display: flex; align-items: center; gap: 8px;
+padding: 20px 4vw 0; flex-wrap: wrap;
+}
+.genre-pill {
+background: rgba(255,255,255,.08);
+color: #aaa; border: 1px solid rgba(255,255,255,.12);
+padding: 7px 16px; border-radius: 20px;
+font-size: .8rem; font-weight: 500;
+cursor: pointer; transition: all .2s; letter-spacing: .3px;
+white-space: nowrap;
+}
+.genre-pill:hover { background: rgba(255,255,255,.15); color: #fff; }
+.genre-pill.active { background: var(–red); color: #fff; border-color: var(–red); }
+
+/* ── ROWS ── */
+.row-section { padding: 40px 0 10px; }
+.row-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 4vw; margin-bottom: 16px;
+}
+.row-title {
+font-size: 1.25rem; font-weight: 700; letter-spacing: .3px;
+display: flex; align-items: center; gap: 10px;
+}
+.row-title .accent { color: var(–red); font-size: .85em; }
+.see-all {
+color: var(–red); font-size: .8rem; font-weight: 600;
+text-decoration: none; letter-spacing: .5px;
+transition: color .2s; cursor: pointer;
+}
+.see-all:hover { color: #ff3d3d; }
+
+.cards-scroll {
+display: flex; gap: 10px;
+overflow-x: auto; padding: 8px 4vw 20px;
+scroll-behavior: smooth;
+scrollbar-width: none;
+}
+.cards-scroll::-webkit-scrollbar { display: none; }
+
+/* ── CARD ── */
+.card {
+flex: 0 0 auto;
+width: 185px; border-radius: 6px;
+overflow: hidden; cursor: pointer;
+position: relative;
+transition: transform .3s cubic-bezier(.25,.46,.45,.94), box-shadow .3s;
+background: var(–card-bg);
+text-decoration: none; color: inherit;
+}
+.card:hover {
+transform: scale(1.08) translateY(-4px);
+box-shadow: 0 16px 40px rgba(0,0,0,.7);
+z-index: 10;
+}
+
+.card-poster {
+width: 100%; aspect-ratio: 2/3;
+object-fit: cover; display: block;
+background: var(–dark3);
+transition: filter .3s;
+}
+.card:hover .card-poster { filter: brightness(.55); }
+
+.card-overlay {
+position: absolute; inset: 0;
+background: linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 55%);
+opacity: 0; transition: opacity .3s;
+display: flex; flex-direction: column; justify-content: flex-end;
+padding: 14px;
+}
+.card:hover .card-overlay { opacity: 1; }
+
+.card-play-btn {
+width: 36px; height: 36px; border-radius: 50%;
+background: var(–red); border: none;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; margin-bottom: 10px;
+transition: transform .2s, background .2s;
+flex-shrink: 0;
+}
+.card-play-btn:hover { transform: scale(1.15); background: var(–red-hover); }
+.card-play-btn svg { width: 14px; height: 14px; fill: #fff; margin-left: 2px; }
+
+.card-info { }
+.card-name {
+font-size: .78rem; font-weight: 700; line-height: 1.3;
+margin-bottom: 4px; color: #fff;
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-meta {
+display: flex; align-items: center; gap: 6px;
+font-size: .68rem; color: #aaa;
+}
+.card-meta .imdb { color: var(–gold); font-weight: 700; font-size: .65rem; }
+.card-meta .dot { color: #555; }
+
+.card-footer {
+padding: 8px 10px 10px;
+background: var(–dark2);
+}
+.card-footer-name {
+font-size: .75rem; font-weight: 600; color: #ddd;
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-footer-year { font-size: .68rem; color: #666; margin-top: 1px; }
+
+/* ── TOP 10 CARD ── */
+.card-top {
+width: 210px;
+}
+.card-top .card-rank {
+position: absolute; bottom: 44px; left: -10px;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 5.5rem; line-height: 1;
+color: transparent;
+-webkit-text-stroke: 3px rgba(255,255,255,.9);
+text-shadow: 2px 4px 12px rgba(0,0,0,.8);
+pointer-events: none; z-index: 5;
+}
+
+/* ── FEATURED WIDE CARD ── */
+.card-wide {
+width: 300px;
+}
+.card-wide .card-poster {
+aspect-ratio: 16/9;
+}
+
+/* ── CONTINUE WATCHING ── */
+.progress-bar {
+position: absolute; bottom: 44px; left: 0; right: 0; height: 3px;
+background: rgba(255,255,255,.2);
+}
+.progress-fill {
+height: 100%; background: var(–red);
+border-radius: 0 2px 2px 0;
+}
+
+/* ── MARQUEE BANNER ── */
+.marquee-wrap {
+overflow: hidden; white-space: nowrap;
+padding: 12px 0; background: var(–red);
+font-size: .75rem; font-weight: 700; letter-spacing: 2px;
+text-transform: uppercase; color: rgba(255,255,255,.8);
+}
+.marquee-inner {
+display: inline-block;
+animation: marquee 22s linear infinite;
+}
+.marquee-inner span { margin: 0 40px; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── FOOTER ── */
+footer {
+padding: 40px 4vw; background: #0a0a0a;
+border-top: 1px solid rgba(255,255,255,.06);
+margin-top: 40px;
+}
+.footer-logo {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.6rem; color: var(–red); margin-bottom: 12px;
+}
+.footer-links {
+display: flex; flex-wrap: wrap; gap: 10px 24px;
+list-style: none; margin-bottom: 16px;
+}
+.footer-links a { color: #666; font-size: .8rem; text-decoration: none; }
+.footer-links a:hover { color: #aaa; }
+.footer-copy { color: #444; font-size: .75rem; }
+
+/* ── MODAL ── */
+.modal-overlay {
+display: none;
+position: fixed; inset: 0; z-index: 200;
+background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+align-items: center; justify-content: center;
+padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+background: var(–dark2);
+border-radius: 10px; max-width: 560px; width: 100%;
+overflow: hidden; position: relative;
+box-shadow: 0 30px 80px rgba(0,0,0,.8);
+animation: modalIn .25s ease;
+}
+@keyframes modalIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-hero {
+position: relative; aspect-ratio: 16/9; background: var(–dark3);
+overflow: hidden;
+}
+.modal-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-hero::after {
+content: ‘’; position: absolute; inset: 0;
+background: linear-gradient(to top, var(–dark2) 0%, transparent 60%);
+}
+.modal-close {
+position: absolute; top: 14px; right: 14px; z-index: 10;
+width: 32px; height: 32px; border-radius: 50%;
+background: rgba(0,0,0,.7); border: none; color: #fff;
+font-size: 1.1rem; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+transition: background .2s;
+}
+.modal-close:hover { background: rgba(0,0,0,.9); }
+.modal-body { padding: 20px 24px 24px; }
+.modal-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 2rem; letter-spacing: .5px; margin-bottom: 8px;
+}
+.modal-meta {
+display: flex; gap: 12px; flex-wrap: wrap;
+font-size: .78rem; color: #888; margin-bottom: 12px; align-items: center;
+}
+.modal-meta .rating { color: var(–gold); font-weight: 700; }
+.modal-meta .hd { border: 1px solid #666; padding: 1px 5px; border-radius: 2px; font-size: .65rem; }
+.modal-desc { font-size: .88rem; color: #bbb; line-height: 1.6; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── LOADING SKELETON ── */
+.skeleton {
+background: linear-gradient(90deg, var(–dark3) 25%, #2a2a2a 50%, var(–dark3) 75%);
+background-size: 200% 100%;
+animation: shimmer 1.5s infinite;
+border-radius: 6px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+.nav-links { display: none; }
+.search-box input { width: 100px; }
+.hero { height: 70vh; }
+.hero-bg { background:
+linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,.5) 50%),
+url(‘https://image.tmdb.org/t/p/original/tmU7GeKVybMWFButWEGl2M4GeiP.jpg’) center/cover; }
+.card { width: 140px; }
+.card-wide { width: 230px; }
+.card-top { width: 160px; }
+}
 </style>
+
 </head>
 <body>
 
-<header>
-  <div class="title">
-    <h1>🎬 Island Cinema Empire</h1>
-    <div class="footerBtns">
-      <button class="btn ghost" id="btnExport">Export Save</button>
-      <button class="btn ghost" id="btnImport">Import Save</button>
-      <button class="btn ghost danger" id="btnReset">Reset</button>
+<!-- NAV -->
+
+<nav id="navbar">
+  <a class="nav-logo" href="https://moviebox.ph" target="_blank">MOVIE<span>BOX</span></a>
+  <ul class="nav-links">
+    <li><a href="https://moviebox.ph" target="_blank" class="active">Home</a></li>
+    <li><a href="https://moviebox.ph/movie" target="_blank">Movies</a></li>
+    <li><a href="https://moviebox.ph/tv" target="_blank">TV Shows</a></li>
+    <li><a href="https://moviebox.ph/top" target="_blank">Top Rated</a></li>
+    <li><a href="https://moviebox.ph/new" target="_blank">New Releases</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search titles..." id="searchInput" />
+    </div>
+    <a class="btn-primary" href="https://moviebox.ph" target="_blank">Watch Free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🔴 Now Streaming</div>
+    <h1 class="hero-title">Dune:<br>Part Two</h1>
+    <div class="hero-meta">
+      <span class="rating">★ 8.5</span>
+      <span class="year">2024</span>
+      <span class="dot">•</span>
+      <span class="runtime">2h 46m</span>
+      <span class="dot">•</span>
+      <span>Sci-Fi</span>
+    </div>
+    <p class="hero-desc">Paul Atreides unites with Chani and the Fremen while on a path of revenge against those who destroyed his family. Facing a choice between the love of his life and the fate of the known universe.</p>
+    <div class="hero-actions">
+      <a class="btn-play" href="https://moviebox.ph/watch-movie/dune-part-two" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Play Now
+      </a>
+      <button class="btn-info" onclick="openModal('Dune: Part Two','2024','2h 46m','8.5','Sci-Fi / Adventure','https://image.tmdb.org/t/p/w780/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg','Paul Atreides unites with Chani and the Fremen on a path of revenge against those who destroyed his family, facing a choice between love and the fate of the universe.','https://moviebox.ph/watch-movie/dune-part-two')">ℹ More Info</button>
     </div>
   </div>
+</section>
 
-  <div class="pillrow">
-    <div class="pill">💵 <strong id="cash">0</strong> <span class="muted">Cash</span></div>
-    <div class="pill">🐚 <strong id="pearls">0</strong> <span class="muted">Pearls</span></div>
-    <div class="pill">⭐ <strong id="rep">0</strong> <span class="muted">Reputation</span></div>
-    <div class="pill">😊 <strong id="happy">0</strong>% <span class="muted">Happiness</span></div>
-    <div class="pill">🧹 <strong id="clean">0</strong>% <span class="muted">Cleanliness</span></div>
-    <div class="pill">🌤️ <strong id="season">—</strong> <span class="muted">Season</span></div>
-  </div>
-</header>
+<!-- GENRE TABS -->
 
-<div class="wrap">
-  <div class="grid">
-    <!-- LEFT -->
-    <div class="card">
-      <div class="hd">
-        <div class="k">Island View</div>
-        <div class="tag" id="islandTag">—</div>
-      </div>
-      <div class="bd">
-        <div class="scene" id="scene">
-          <div class="lagoon"></div>
-          <div class="sand"></div>
-          <div class="cinema">
-            <div class="sign" id="cinemaSign">LOCAL CINEMA</div>
-            <div class="spark" title="event"></div>
-            <div class="door"></div>
-          </div>
-          <div class="walker"></div>
-          <div class="walker"></div>
-          <div class="walker"></div>
-        </div>
+<div class="genre-bar">
+  <span class="genre-pill active" onclick="setGenre(this)">All</span>
+  <span class="genre-pill" onclick="setGenre(this)">Action</span>
+  <span class="genre-pill" onclick="setGenre(this)">Drama</span>
+  <span class="genre-pill" onclick="setGenre(this)">Comedy</span>
+  <span class="genre-pill" onclick="setGenre(this)">Horror</span>
+  <span class="genre-pill" onclick="setGenre(this)">Sci-Fi</span>
+  <span class="genre-pill" onclick="setGenre(this)">Thriller</span>
+  <span class="genre-pill" onclick="setGenre(this)">Romance</span>
+  <span class="genre-pill" onclick="setGenre(this)">Animation</span>
+  <span class="genre-pill" onclick="setGenre(this)">Documentary</span>
+</div>
 
-        <div style="height:10px"></div>
+<!-- MARQUEE -->
 
-        <div class="row">
-          <div class="col">
-            <div class="tag good">💸 Income/sec: <strong id="ips">0</strong></div>
-          </div>
-          <div class="col">
-            <div class="tag warn">👥 Customers: <strong id="cust">0</strong>/min</div>
-          </div>
-          <div class="col">
-            <div class="tag" id="eventTag">🎉 Event: <strong id="eventName">None</strong></div>
-          </div>
-        </div>
-
-        <div style="height:10px"></div>
-
-        <div class="row">
-          <button class="btn" id="btnCollect">Collect Now 💵</button>
-          <button class="btn secondary" id="btnWatchAd">Watch Ad (+Pearls) 🐚</button>
-          <button class="btn ghost" id="btnNextSeason">Next Season 🌤️</button>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <div class="card" style="box-shadow:none">
-          <div class="hd">
-            <div class="k">Multi-Screen Cinema</div>
-            <div class="muted small">Schedule movies per screen</div>
-          </div>
-          <div class="bd">
-            <div class="list" id="screensList"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT -->
-    <div class="card">
-      <div class="hd">
-        <div class="k">Management</div>
-        <div class="muted small">Upgrade, staff, islands, events</div>
-      </div>
-      <div class="bd">
-        <div class="seg" id="tabs">
-          <button class="btn ghost active" data-tab="islands">Islands</button>
-          <button class="btn ghost" data-tab="upgrades">Upgrades</button>
-          <button class="btn ghost" data-tab="staff">Staff</button>
-          <button class="btn ghost" data-tab="events">Events</button>
-          <button class="btn ghost" data-tab="dashboard">Dashboard</button>
-        </div>
-
-        <div style="height:10px"></div>
-
-        <div id="tab-islands" class="tab">
-          <div class="list" id="islandsList"></div>
-        </div>
-
-        <div id="tab-upgrades" class="tab" style="display:none">
-          <div class="list" id="upgradesList"></div>
-        </div>
-
-        <div id="tab-staff" class="tab" style="display:none">
-          <div class="list" id="staffList"></div>
-        </div>
-
-        <div id="tab-events" class="tab" style="display:none">
-          <div class="list" id="eventsList"></div>
-        </div>
-
-        <div id="tab-dashboard" class="tab" style="display:none">
-          <div class="bars" id="dashBars"></div>
-          <div style="height:10px"></div>
-          <div class="miniChart">
-            <div>
-              <div class="label">Daily income (est.)</div>
-              <div class="val" id="dailyIncome">0</div>
-            </div>
-            <div>
-              <div class="label">Staff cost / min</div>
-              <div class="val" id="staffCost">0</div>
-            </div>
-          </div>
-          <div style="height:10px"></div>
-          <div class="miniChart">
-            <div>
-              <div class="label">Unlock progress</div>
-              <div class="val" id="unlockProgress">—</div>
-            </div>
-            <div>
-              <div class="label">Transport</div>
-              <div class="val" id="transportName">—</div>
-            </div>
-          </div>
-          <div style="height:10px"></div>
-          <div class="small muted">
-            Tip: If income feels slow, upgrade <span class="kbd">Screens</span> + hire a <span class="kbd">Floor Manager</span> to automate collection.
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="marquee-wrap" style="margin-top:24px;">
+  <div class="marquee-inner">
+    <span>FREE TO WATCH</span><span>NO SUBSCRIPTION</span><span>4K QUALITY</span><span>LATEST RELEASES</span>
+    <span>MOVIES & TV SHOWS</span><span>WATCH ANYTIME</span><span>FREE TO WATCH</span><span>NO SUBSCRIPTION</span>
+    <span>4K QUALITY</span><span>LATEST RELEASES</span><span>MOVIES & TV SHOWS</span><span>WATCH ANYTIME</span>
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <div class="trow">
-    <div class="msg" id="toastMsg">—</div>
-    <button class="btn" id="toastBtn">OK</button>
+<!-- TRENDING ROW -->
+
+<section class="row-section">
+  <div class="row-header">
+    <div class="row-title">🔥 Trending Now <span class="accent">POPULAR</span></div>
+    <a class="see-all" href="https://moviebox.ph/trending" target="_blank">See All →</a>
+  </div>
+  <div class="cards-scroll" id="trending-row"></div>
+</section>
+
+<!-- TOP 10 ROW -->
+
+<section class="row-section">
+  <div class="row-header">
+    <div class="row-title">🏆 Top 10 <span class="accent">THIS WEEK</span></div>
+    <a class="see-all" href="https://moviebox.ph/top" target="_blank">See All →</a>
+  </div>
+  <div class="cards-scroll" id="top10-row"></div>
+</section>
+
+<!-- NEW RELEASES -->
+
+<section class="row-section">
+  <div class="row-header">
+    <div class="row-title">✨ New Releases</div>
+    <a class="see-all" href="https://moviebox.ph/new" target="_blank">See All →</a>
+  </div>
+  <div class="cards-scroll" id="new-row"></div>
+</section>
+
+<!-- TV SHOWS -->
+
+<section class="row-section">
+  <div class="row-header">
+    <div class="row-title">📺 Popular TV Shows</div>
+    <a class="see-all" href="https://moviebox.ph/tv" target="_blank">See All →</a>
+  </div>
+  <div class="cards-scroll" id="tv-row"></div>
+</section>
+
+<!-- CONTINUE WATCHING (WIDE) -->
+
+<section class="row-section">
+  <div class="row-header">
+    <div class="row-title">⏯ Continue Watching</div>
+  </div>
+  <div class="cards-scroll" id="continue-row"></div>
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+  <div class="footer-logo">MOVIEBOX</div>
+  <ul class="footer-links">
+    <li><a href="https://moviebox.ph" target="_blank">Home</a></li>
+    <li><a href="https://moviebox.ph/movie" target="_blank">Movies</a></li>
+    <li><a href="https://moviebox.ph/tv" target="_blank">TV Shows</a></li>
+    <li><a href="https://moviebox.ph/top" target="_blank">Top Rated</a></li>
+    <li><a href="https://moviebox.ph/new" target="_blank">New Releases</a></li>
+    <li><a href="https://moviebox.ph" target="_blank">About</a></li>
+  </ul>
+  <p class="footer-copy">© 2024 MovieBox — Watch Movies & TV Shows Free Online. All content links to moviebox.ph.</p>
+</footer>
+
+<!-- MODAL -->
+
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-hero">
+      <img id="modal-img" src="" alt="" />
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-meta" id="modal-meta"></div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-actions">
+        <a class="btn-play" id="modal-play" href="#" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M8 5v14l11-7z"/></svg>
+          Watch Now
+        </a>
+        <button class="btn-info" onclick="closeModal()">✕ Close</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-/* =========================
-   DATA (FULL GAME)
-========================= */
-const GAME_VERSION = "1.0.0-html-full";
-const SAVE_KEY = "ice_full_save_v1";
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const movies = {
+  trending: [
+    {t:'Dune: Part Two',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',d:'Paul Atreides unites with Chani and the Fremen while on a path of revenge.'},
+    {t:'Oppenheimer',y:2023,r:'8.3',g:'Drama',p:'https://image.tmdb.org/t/p/w342/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',d:'The story of J. Robert Oppenheimer and the development of the atomic bomb.'},
+    {t:'Poor Things',y:2023,r:'8.0',g:'Fantasy',p:'https://image.tmdb.org/t/p/w342/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg',d:'A young woman brought back to life and her amazing adventures.'},
+    {t:'Godzilla x Kong',y:2024,r:'7.0',g:'Action',p:'https://image.tmdb.org/t/p/w342/z1p34vh7dEOnLDmyCrlUVLuoDzd.jpg',d:'The epic battle continues as Godzilla and Kong collide with new threats.'},
+    {t:'Civil War',y:2024,r:'7.5',g:'Thriller',p:'https://image.tmdb.org/t/p/w342/sh7Rg8Er3tFcN9BpKIPOMvALgZd.jpg',d:'A journey across a dystopian future America, balancing on the brink of collapse.'},
+    {t:'Anatomy of a Fall',y:2023,r:'7.7',g:'Drama',p:'https://image.tmdb.org/t/p/w342/kQs6keheMwCxJxrzV83VUwFtHkB.jpg',d:'A woman is suspected of murdering her husband in a remote French village.'},
+    {t:'The Zone of Interest',y:2023,r:'7.3',g:'War',p:'https://image.tmdb.org/t/p/w342/hUu9zyZmKuTWnEKz9hHMcYBGKDo.jpg',d:'The commandant of Auschwitz and his wife build their dream life next to the camp.'},
+    {t:'Wonka',y:2023,r:'7.0',g:'Fantasy',p:'https://image.tmdb.org/t/p/w342/qhb1qOilapbapxWQn9jtRCMwLJV.jpg',d:'The story of how Willy Wonka came to open the world\'s most famous candy store.'},
+  ],
+  top10: [
+    {t:'Interstellar',y:2014,r:'8.7',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',d:'A team of explorers travel through a wormhole in space in search of a new home.'},
+    {t:'The Dark Knight',y:2008,r:'9.0',g:'Action',p:'https://image.tmdb.org/t/p/w342/qJ2tW6WMUDux911r6m7haRef0WH.jpg',d:'Batman faces the Joker in a battle for the soul of Gotham.'},
+    {t:'Inception',y:2010,r:'8.8',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg',d:'A thief who steals corporate secrets through dream-sharing technology.'},
+    {t:'Parasite',y:2019,r:'8.5',g:'Drama',p:'https://image.tmdb.org/t/p/w342/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg',d:'Greed and class discrimination threaten the newly formed bond between families.'},
+    {t:'The Godfather',y:1972,r:'9.2',g:'Crime',p:'https://image.tmdb.org/t/p/w342/3bhkrj58Vtu7enYsLeLTkm3go4.jpg',d:'The aging patriarch of an organized crime dynasty transfers control to his son.'},
+    {t:'Pulp Fiction',y:1994,r:'8.9',g:'Crime',p:'https://image.tmdb.org/t/p/w342/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg',d:'The lives of two mob hitmen, a boxer, and other criminals intertwine.'},
+    {t:'Schindler\'s List',y:1993,r:'9.0',g:'Drama',p:'https://image.tmdb.org/t/p/w342/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg',d:'The true story of Oskar Schindler who saved over a thousand Jewish refugees.'},
+    {t:'Fight Club',y:1999,r:'8.8',g:'Thriller',p:'https://image.tmdb.org/t/p/w342/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg',d:'An insomniac office worker forms an underground fight club with a soap maker.'},
+  ],
+  newReleases: [
+    {t:'Inside Out 2',y:2024,r:'7.8',g:'Animation',p:'https://image.tmdb.org/t/p/w342/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg',d:'Riley enters adolescence as new emotions enter her mind headquarters.'},
+    {t:'Kingdom of the Planet of the Apes',y:2024,r:'7.1',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/gKkl37BQuKTanygYQo1HvwA4fmv.jpg',d:'Many generations after Caesar, a young ape goes on a journey.'},
+    {t:'Furiosa',y:2024,r:'7.8',g:'Action',p:'https://image.tmdb.org/t/p/w342/iADOJ8Zymm2hvF3z5marKAHNCrJ.jpg',d:'The origin story of renegade warrior Furiosa in a post-apocalyptic world.'},
+    {t:'Hit Man',y:2024,r:'7.7',g:'Comedy',p:'https://image.tmdb.org/t/p/w342/1126gjZ4iBgKhqMsEKWx93LPkqQ.jpg',d:'A mild-mannered professor moonlights as a fake hit man for the police.'},
+    {t:'Alien: Romulus',y:2024,r:'7.3',g:'Horror',p:'https://image.tmdb.org/t/p/w342/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg',d:'Young colonizers face the most terrifying life form in the universe.'},
+    {t:'Deadpool & Wolverine',y:2024,r:'7.9',g:'Action',p:'https://image.tmdb.org/t/p/w342/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',d:'Deadpool is recruited by the Time Variance Authority alongside a reluctant Wolverine.'},
+    {t:'A Quiet Place: Day One',y:2024,r:'7.1',g:'Horror',p:'https://image.tmdb.org/t/p/w342/yrpPYKijwdMHyTGIOd1iK1h0Wo6.jpg',d:'New York City is invaded by creatures that hunt by sound.'},
+    {t:'Twisters',y:2024,r:'7.2',g:'Action',p:'https://image.tmdb.org/t/p/w342/kluKSdBBQzjC6gPQhroGwMGkEHC.jpg',d:'Storm chasers pursue tornadoes in Oklahoma using experimental methods.'},
+  ],
+  tv: [
+    {t:'The Bear',y:2024,r:'8.7',g:'Drama',p:'https://image.tmdb.org/t/p/w342/sHFlbKS3WLqMnp9t2ghADIJFnuQ.jpg',d:'A young chef from the fine dining world returns home to run the family sandwich shop.'},
+    {t:'Shogun',y:2024,r:'9.0',g:'Drama',p:'https://image.tmdb.org/t/p/w342/7O4iVfOMQmdCSxhOg1WnzG1AgYT.jpg',d:'A shipwrecked English navigator becomes the first foreign samurai in feudal Japan.'},
+    {t:'House of the Dragon',y:2024,r:'8.4',g:'Fantasy',p:'https://image.tmdb.org/t/p/w342/t9XkeE7HzOsdQcDDDapDYh8Rrmt.jpg',d:'The prequel to Game of Thrones follows the Targaryen civil war.'},
+    {t:'The Last of Us',y:2023,r:'8.8',g:'Drama',p:'https://image.tmdb.org/t/p/w342/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',d:'A smuggler takes a teenage girl across a post-apocalyptic America.'},
+    {t:'Fallout',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/AnsSKR2TQlFLNiKDeaHdvBUOD8A.jpg',d:'A young woman emerges from her vault into the radiation-ravaged wasteland.'},
+    {t:'True Detective S4',y:2024,r:'7.6',g:'Crime',p:'https://image.tmdb.org/t/p/w342/z2yahl2uefxDCl0nogcRBstwruJ.jpg',d:'When a research station goes dark during polar night, two detectives must confront secrets.'},
+    {t:'3 Body Problem',y:2024,r:'7.4',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/oGD2kUCIlBXMHPMDYPPHgU1i93l.jpg',d:'A fateful decision made in 1960s China echoes across space and time to a group of scientists.'},
+    {t:'The Penguin',y:2024,r:'8.5',g:'Crime',p:'https://image.tmdb.org/t/p/w342/e0PVhtmGN7JBvPAv9n2BxOj6OZE.jpg',d:'Oz Cobb rises to power through Gotham\'s criminal underworld.'},
+  ],
+  continueWatching: [
+    {t:'Oppenheimer',y:2023,r:'8.3',g:'Drama',p:'https://image.tmdb.org/t/p/w780/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',prog:65,wide:true,d:'The story of J. Robert Oppenheimer, the father of the atomic bomb.'},
+    {t:'The Bear S3',y:2024,r:'8.7',g:'Drama',p:'https://image.tmdb.org/t/p/w780/sHFlbKS3WLqMnp9t2ghADIJFnuQ.jpg',prog:30,wide:true,d:'A young chef from fine dining returns home.'},
+    {t:'Dune: Part Two',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w780/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',prog:80,wide:true,d:'Paul Atreides unites with Chani and the Fremen.'},
+    {t:'Shogun',y:2024,r:'9.0',g:'Drama',p:'https://image.tmdb.org/t/p/w780/7O4iVfOMQmdCSxhOg1WnzG1AgYT.jpg',prog:45,wide:true,d:'A shipwrecked navigator becomes the first foreign samurai.'},
+    {t:'Fallout',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w780/AnsSKR2TQlFLNiKDeaHdvBUOD8A.jpg',prog:20,wide:true,d:'A young woman emerges into the radiation-ravaged wasteland.'},
+  ]
+};
 
-const ISLANDS = [
-  { id:0, name:"Local Island Cinema", theme:"Community", mult:1.00, unlock:0,   guests:"Locals", crowd:1.0 },
-  { id:1, name:"Fishing Community Island", theme:"Harbor", mult:1.20, unlock:100, guests:"Locals + Fishers", crowd:1.1 },
-  { id:2, name:"Tourist Island", theme:"Beach", mult:1.50, unlock:300, guests:"Tourists", crowd:1.25 },
-  { id:3, name:"Resort Cinema", theme:"Luxury", mult:2.00, unlock:700, guests:"Resort Guests", crowd:1.35 },
-  { id:4, name:"Floating Ocean Cinema", theme:"Lagoon", mult:3.00, unlock:1500, guests:"VIP + Tourists", crowd:1.5 },
-  { id:5, name:"Airport Island Mega Cinema", theme:"International", mult:4.00, unlock:3000, guests:"International", crowd:1.7 },
-];
-
-const SEASONS = [
-  { id:0, name:"Off-Season", custMult:0.85, spendMult:0.9, repMult:0.9 },
-  { id:1, name:"Festival Season", custMult:1.05, spendMult:1.0, repMult:1.15 },
-  { id:2, name:"Peak Tourism", custMult:1.25, spendMult:1.15, repMult:1.0 },
-];
-
-const TRANSPORT = [
-  { id:0, name:"Walking", custMult:1.00, cap:1.0 },
-  { id:1, name:"Dhoni Boats", custMult:1.20, cap:1.15 },
-  { id:2, name:"Speedboats", custMult:1.45, cap:1.35 },
-  { id:3, name:"Seaplanes", custMult:1.80, cap:1.55 },
-];
-
-const MOVIES = [
-  { id:0, name:"Island Romance", genre:"Romance", cost:  0, basePop:1.10, pref:[0,3], repGain:1.1 },
-  { id:1, name:"Ocean Action", genre:"Action", cost:150, basePop:1.25, pref:[2,5], repGain:1.0 },
-  { id:2, name:"Maldives Documentary", genre:"Doc", cost:220, basePop:1.40, pref:[0,4], repGain:1.25 },
-  { id:3, name:"Resort Premiere Special", genre:"Premiere", cost:350, basePop:1.55, pref:[3,4,5], repGain:1.35 },
-];
-
-const EVENTS = [
-  { id:0, name:"Eid Movie Night 🌙", bonus:1.80, repBoost:1.35, durationSec: 120, pearlReward: 2 },
-  { id:1, name:"Island Film Festival 🎞️", bonus:2.20, repBoost:1.55, durationSec: 150, pearlReward: 3 },
-  { id:2, name:"Resort Premiere ✨", bonus:2.60, repBoost:1.35, durationSec: 120, pearlReward: 4 },
-  { id:3, name:"Community Outdoor Cinema 🏝️", bonus:1.60, repBoost:1.25, durationSec: 180, pearlReward: 2 },
-];
-
-const SCREEN_TYPES = [
-  { id:0, name:"Screen 1 (Basic)", base:1.00 },
-  { id:1, name:"Screen 2 (HD)", base:1.15 },
-  { id:2, name:"Screen 3 (IMAX)", base:1.35 },
-  { id:3, name:"Screen 4 (Open-air)", base:1.25 },
-];
-
-const STAFF = [
-  { key:"cleaner", name:"Cleaner", desc:"Improves cleanliness → happiness → income.", baseCost:120, salaryPerMin:6, cleanBonus:7, happyBonus:2, auto:false },
-  { key:"floor", name:"Floor Manager", desc:"Auto-collect + boosts capacity.", baseCost:220, salaryPerMin:10, cleanBonus:2, happyBonus:4, auto:true },
-  { key:"event", name:"Event Manager", desc:"Events last longer + better rewards.", baseCost:350, salaryPerMin:14, cleanBonus:1, happyBonus:3, auto:false },
-];
-
-/* =========================
-   SAVE MODEL (JSON)
-========================= */
-function defaultSave(){
-  return {
-    version: GAME_VERSION,
-    cash: 500,
-    pearls: 0,
-    rep: 0,
-    happiness: 70,
-    cleanliness: 65,
-
-    islandId: 0,
-    unlockedIslands: [true,false,false,false,false,false],
-
-    seasonId: 0,
-    transportId: 0,
-
-    // Upgrades (global)
-    ticketLv: 1,
-    snackLv: 1,
-    decorLv: 0,
-    soundLv: 0,
-
-    // Screens
-    screens: SCREEN_TYPES.map(s => ({
-      id:s.id,
-      level: 1,
-      movieId: 0
-    })),
-
-    // Licensed movies
-    licensed: { 0:true },
-
-    // Staff levels
-    staff: { cleaner:0, floor:0, event:0 },
-
-    // Event
-    activeEventId: null,
-    eventEndsAt: 0,
-
-    // Bookkeeping
-    lastTickAt: Date.now(),
-    lastSeenAt: Date.now(),
-    history: {
-      lastMinuteCash: 0,
-      lastMinuteRep: 0,
-    }
-  };
+// slug helper
+function slug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 }
 
-function loadSave(){
-  try{
-    const raw = localStorage.getItem(SAVE_KEY);
-    if(!raw) return defaultSave();
-    const obj = JSON.parse(raw);
-    // minimal migration safety
-    const base = defaultSave();
-    return deepMerge(base, obj);
-  }catch{
-    return defaultSave();
-  }
+function movieUrl(title, isTV) {
+  const s = slug(title);
+  return isTV
+    ? `https://moviebox.ph/watch-tv-series/${s}`
+    : `https://moviebox.ph/watch-movie/${s}`;
 }
 
-function deepMerge(target, source){
-  if(typeof source !== "object" || source === null) return target;
-  for(const k of Object.keys(source)){
-    const sv = source[k];
-    const tv = target[k];
-    if(Array.isArray(tv) && Array.isArray(sv)){
-      target[k] = sv; // accept saved array
-    }else if(typeof tv === "object" && tv && typeof sv === "object" && sv){
-      target[k] = deepMerge(tv, sv);
-    }else{
-      target[k] = sv;
-    }
-  }
-  return target;
-}
+// ── RENDER CARD ────────────────────────────────────────────────────────────────
+function buildCard(m, rank, isTV, wide, continueData) {
+  const url = movieUrl(m.t, isTV);
+  const card = document.createElement('a');
+  card.href = url;
+  card.target = '_blank';
+  card.className = 'card' + (rank ? ' card-top' : '') + (wide ? ' card-wide' : '');
+  card.rel = 'noopener';
 
-function persist(){
-  save.lastSeenAt = Date.now();
-  localStorage.setItem(SAVE_KEY, JSON.stringify(save));
-}
+  const playPath = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
 
-/* =========================
-   HELPERS
-========================= */
-const $ = (id)=>document.getElementById(id);
-
-function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-function fmt(n){
-  n = Math.floor(n);
-  if(n>=1_000_000) return (n/1_000_000).toFixed(2)+"M";
-  if(n>=1_000) return (n/1_000).toFixed(1)+"K";
-  return String(n);
-}
-function toast(msg, btnText="OK"){
-  $("toastMsg").textContent = msg;
-  $("toastBtn").textContent = btnText;
-  $("toast").classList.add("show");
-}
-$("toastBtn").onclick = ()=>$("toast").classList.remove("show");
-
-/* =========================
-   GAME STATE
-========================= */
-let save = loadSave();
-
-/* =========================
-   ECONOMY FORMULAS
-========================= */
-function island(){ return ISLANDS[save.islandId]; }
-function season(){ return SEASONS[save.seasonId]; }
-function transport(){ return TRANSPORT[save.transportId]; }
-function activeEvent(){
-  if(save.activeEventId === null) return null;
-  return EVENTS.find(e=>e.id===save.activeEventId) || null;
-}
-
-function cleanlinessBonus(){
-  // 0.75x to 1.25x
-  return 0.75 + (save.cleanliness/100)*0.5;
-}
-function happinessBonus(){
-  // 0.70x to 1.30x
-  return 0.70 + (save.happiness/100)*0.6;
-}
-function staffBonuses(){
-  const s = save.staff;
-  // Each level meaningful but bounded
-  const cleanAdd = (s.cleaner*7) + (s.floor*2) + (s.event*1);
-  const happyAdd = (s.cleaner*2) + (s.floor*4) + (s.event*3);
-  const capMult = 1 + (s.floor * 0.08);
-
-  return { cleanAdd, happyAdd, capMult };
-}
-function staffCostPerMin(){
-  let cost = 0;
-  for(const st of STAFF){
-    cost += save.staff[st.key] * st.salaryPerMin;
-  }
-  return cost;
-}
-function customerRatePerMin(){
-  // base customers depends on island crowd + season + transport + capacity from staff
-  const base = 18 * island().crowd;
-  const cap = staffBonuses().capMult * transport().cap;
-  return base * season().custMult * transport().custMult * cap;
-}
-
-function screenIncomePerSec(screen){
-  // base ticket+snack per screen
-  const ticket = 1.2 * save.ticketLv;
-  const snack  = 0.9 * save.snackLv;
-  const decor  = 0.06 * save.decorLv;
-  const sound  = 0.05 * save.soundLv;
-
-  const base = (ticket + snack + decor + sound) * SCREEN_TYPES[screen.id].base;
-
-  const mv = MOVIES.find(m=>m.id===screen.movieId) || MOVIES[0];
-  const pref = mv.pref.includes(save.islandId) ? 1.25 : 0.75;
-
-  // screen level boosts
-  const lvMult = 1 + (screen.level-1)*0.18;
-
-  // event bonus
-  const ev = activeEvent();
-  const evMult = ev ? ev.bonus : 1;
-
-  // customer capacity factor
-  const custFactor = clamp(customerRatePerMin()/24, 0.55, 1.6);
-
-  // overall multipliers
-  const mult = island().mult * season().spendMult * pref * lvMult * evMult * custFactor * cleanlinessBonus() * happinessBonus();
-
-  return base * mult;
-}
-
-function totalIncomePerSec(){
-  let sum = 0;
-  for(const sc of save.screens) sum += screenIncomePerSec(sc);
-  return sum;
-}
-
-function repGainPerSec(){
-  // Reputation grows via good operation; event + season can boost
-  const ev = activeEvent();
-  const evMult = ev ? ev.repBoost : 1;
-  const quality = (save.happiness/100) * 0.7 + (save.cleanliness/100) * 0.3; // 0..1
-  return 0.04 * quality * evMult * season().repMult * (1 + save.decorLv*0.01);
-}
-
-function applyStaffToMetrics(){
-  const b = staffBonuses();
-  save.cleanliness = clamp(save.cleanliness + b.cleanAdd*0.12, 0, 100);
-  save.happiness   = clamp(save.happiness   + b.happyAdd*0.08,  0, 100);
-}
-
-function decayMetrics(){
-  // Without staff, cleanliness drops faster
-  const staffTotal = save.staff.cleaner + save.staff.floor + save.staff.event;
-  const decay = staffTotal>0 ? 0.10 : 0.22;
-  save.cleanliness = clamp(save.cleanliness - decay, 0, 100);
-
-  // happiness follows cleanliness + crowd pressure
-  const crowdPressure = clamp((customerRatePerMin()/30) - 0.6, 0, 1) * 0.12;
-  save.happiness = clamp(save.happiness - (0.08 + crowdPressure) + (save.cleanliness/100)*0.04, 0, 100);
-}
-
-/* =========================
-   UNLOCKS
-========================= */
-function checkIslandUnlocks(){
-  for(const isl of ISLANDS){
-    if(!save.unlockedIslands[isl.id] && save.rep >= isl.unlock){
-      save.unlockedIslands[isl.id] = true;
-      toast(`New island unlocked: ${isl.name} 🏝️`);
-    }
-  }
-}
-function nextLockedIsland(){
-  const locked = ISLANDS.filter(i=>!save.unlockedIslands[i.id]).sort((a,b)=>a.unlock-b.unlock)[0] || null;
-  return locked;
-}
-
-/* =========================
-   ACTIONS
-========================= */
-function addCash(n){ save.cash += n; }
-function spendCash(n){ if(save.cash < n) return false; save.cash -= n; return true; }
-function addPearls(n){ save.pearls += n; }
-
-function collectNow(){
-  // manual collection gives a burst of 12 seconds of income
-  const gain = totalIncomePerSec() * 12;
-  addCash(gain);
-  save.rep += repGainPerSec() * 8;
-  applyStaffToMetrics();
-  checkIslandUnlocks();
-  persist();
-  render();
-  toast(`Collected +${fmt(gain)} cash 💵`);
-}
-
-function watchAd(){
-  // no forced ads: this is voluntary reward
-  addPearls(2);
-  save.cash += totalIncomePerSec() * 8;
-  persist();
-  render();
-  toast("Thanks! You got +2 Pearls 🐚 and a small cash boost.");
-}
-
-function nextSeason(){
-  save.seasonId = (save.seasonId + 1) % SEASONS.length;
-  persist();
-  render();
-  toast(`Season changed to: ${season().name} 🌤️`);
-}
-
-function buyMovie(movieId){
-  const mv = MOVIES.find(m=>m.id===movieId);
-  if(!mv) return;
-  if(save.licensed[movieId]) return;
-  if(!spendCash(mv.cost)){
-    toast("Not enough cash to license that movie.");
-    return;
-  }
-  save.licensed[movieId] = true;
-  persist();
-  render();
-  toast(`Licensed: ${mv.name} 🎟️`);
-}
-
-function setScreenMovie(screenId, movieId){
-  const sc = save.screens.find(s=>s.id===screenId);
-  if(!sc) return;
-  if(!save.licensed[movieId]){
-    toast("You must license this movie first.");
-    return;
-  }
-  sc.movieId = movieId;
-  persist();
-  render();
-}
-
-function upgradeScreen(screenId){
-  const sc = save.screens.find(s=>s.id===screenId);
-  if(!sc) return;
-  const cost = Math.floor((120 * (1+screenId*0.2)) * Math.pow(1.55, sc.level-1));
-  if(!spendCash(cost)){
-    toast("Not enough cash to upgrade this screen.");
-    return;
-  }
-  sc.level++;
-  persist();
-  render();
-  toast(`Upgraded ${SCREEN_TYPES[screenId].name} to Lv ${sc.level} 🎥`);
-}
-
-function upgradeGlobal(key){
-  const map = {
-    ticketLv:{ base:120, pow:1.45, label:"Ticket Counter" },
-    snackLv:{ base:110, pow:1.45, label:"Snack Stall" },
-    decorLv:{ base:140, pow:1.55, label:"Decorations" },
-    soundLv:{ base:160, pow:1.55, label:"Sound System" },
-  };
-  const meta = map[key];
-  const lv = save[key];
-  const cost = Math.floor(meta.base * Math.pow(meta.pow, lv-1));
-  if(!spendCash(cost)){
-    toast("Not enough cash for this upgrade.");
-    return;
-  }
-  save[key]++;
-  // small immediate satisfaction boost
-  if(key==="decorLv"){ save.happiness = clamp(save.happiness + 3,0,100); }
-  if(key==="soundLv"){ save.happiness = clamp(save.happiness + 2,0,100); }
-  persist();
-  render();
-  toast(`${meta.label} upgraded to Lv ${save[key]} ✅`);
-}
-
-function hireStaff(key){
-  const st = STAFF.find(s=>s.key===key);
-  if(!st) return;
-  const lv = save.staff[key];
-  const cost = Math.floor(st.baseCost * Math.pow(1.6, lv));
-  if(!spendCash(cost)){
-    toast("Not enough cash to hire/upgrade staff.");
-    return;
-  }
-  save.staff[key] = lv + 1;
-  persist();
-  render();
-  toast(`${st.name} upgraded to Lv ${save.staff[key]} 👥`);
-}
-
-function upgradeTransport(){
-  if(save.transportId >= TRANSPORT.length-1){
-    toast("Transport is already maxed.");
-    return;
-  }
-  const nextId = save.transportId + 1;
-  const cost = Math.floor(260 * Math.pow(1.75, nextId-1));
-  if(!spendCash(cost)){
-    toast("Not enough cash to upgrade transport.");
-    return;
-  }
-  save.transportId = nextId;
-  persist();
-  render();
-  toast(`Transport upgraded to: ${transport().name} 🛥️`);
-}
-
-function selectIsland(id){
-  if(!save.unlockedIslands[id]){
-    toast("This island is locked. Increase reputation ⭐");
-    return;
-  }
-  save.islandId = id;
-  // island change gently refreshes metrics
-  save.cleanliness = clamp(save.cleanliness - 2, 0, 100);
-  save.happiness   = clamp(save.happiness - 1, 0, 100);
-  persist();
-  render();
-}
-
-function startEvent(eventId){
-  // If event manager exists, extend duration and reward slightly
-  const ev = EVENTS.find(e=>e.id===eventId);
-  if(!ev) return;
-
-  if(save.activeEventId !== null && Date.now() < save.eventEndsAt){
-    toast("An event is already active.");
-    return;
+  let progressHTML = '';
+  if (continueData) {
+    progressHTML = `<div class="progress-bar"><div class="progress-fill" style="width:${continueData.prog}%"></div></div>`;
   }
 
-  // Optional: spend pearls to start (keeps it meaningful)
-  const pearlCost = 2;
-  if(save.pearls < pearlCost){
-    toast(`Need ${pearlCost} Pearls 🐚 to start an event. Watch an ad or earn more.`);
-    return;
-  }
-  save.pearls -= pearlCost;
-
-  const mgrLv = save.staff.event;
-  const extra = 1 + mgrLv * 0.12;
-  save.activeEventId = eventId;
-  save.eventEndsAt = Date.now() + Math.floor(ev.durationSec * 1000 * extra);
-
-  persist();
-  render();
-  toast(`${ev.name} started! 🎉`);
-}
-
-/* =========================
-   OFFLINE EARNINGS
-========================= */
-function handleOffline(){
-  const now = Date.now();
-  const last = save.lastSeenAt || now;
-  const diffSec = Math.max(0, (now-last)/1000);
-
-  if(diffSec < 8) return;
-
-  // cap offline at 6 hours unless manager exists
-  const managerLv = save.staff.floor;
-  const capSec = managerLv > 0 ? 12*3600 : 6*3600;
-  const effective = Math.min(diffSec, capSec);
-
-  // offline efficiency
-  const eff = managerLv > 0 ? clamp(0.45 + managerLv*0.06, 0.45, 0.85) : 0.35;
-
-  const earned = totalIncomePerSec() * effective * eff;
-  const repEarned = repGainPerSec() * effective * (0.65);
-
-  save.cash += earned;
-  save.rep += repEarned;
-
-  // minor metric decay while away
-  save.cleanliness = clamp(save.cleanliness - effective/1200, 0, 100);
-  save.happiness = clamp(save.happiness - effective/1800, 0, 100);
-
-  checkIslandUnlocks();
-  persist();
-
-  toast(`While you were away (${Math.floor(effective/60)}m): +${fmt(earned)} cash 💵, +${repEarned.toFixed(0)} rep ⭐`);
-}
-
-/* =========================
-   LOOP (TICK)
-========================= */
-function tick(){
-  // event expire
-  if(save.activeEventId !== null && Date.now() >= save.eventEndsAt){
-    const ev = EVENTS.find(e=>e.id===save.activeEventId);
-    const reward = ev ? (ev.pearlReward + save.staff.event) : 2;
-    addPearls(reward);
-    save.activeEventId = null;
-    save.eventEndsAt = 0;
-    toast(`Event ended! Reward: +${reward} Pearls 🐚`);
-  }
-
-  // salaries (per tick = every 3 sec)
-  const salaryPerMin = staffCostPerMin();
-  const salaryPerTick = salaryPerMin / 20; // 60 sec / 3 sec = 20 ticks
-  save.cash -= salaryPerTick;
-  if(save.cash < 0) save.cash = 0;
-
-  // income
-  const income = totalIncomePerSec() * 3;
-  addCash(income);
-
-  // rep
-  save.rep += repGainPerSec() * 3;
-
-  // metrics
-  decayMetrics();
-  applyStaffToMetrics();
-
-  // unlocks
-  checkIslandUnlocks();
-
-  // auto-collect perk: floor manager
-  if(save.staff.floor > 0){
-    // small extra efficiency (already in formula via capacity; here a bit more)
-    save.cash += totalIncomePerSec() * (0.15 + save.staff.floor*0.03);
-  }
-
-  persist();
-  render(false);
-}
-
-let loop = null;
-
-/* =========================
-   RENDERING
-========================= */
-function islandTagClass(){
-  if(save.unlockedIslands.every(Boolean)) return "good";
-  const nxt = nextLockedIsland();
-  if(!nxt) return "good";
-  const pct = clamp(save.rep / nxt.unlock, 0, 1);
-  if(pct >= 0.8) return "warn";
-  return "";
-}
-
-function renderScene(){
-  // change sign
-  $("cinemaSign").textContent = island().theme.toUpperCase() + " CINEMA";
-
-  // set island tag
-  const nxt = nextLockedIsland();
-  const msg = nxt ? `Next: ${nxt.name} at ⭐ ${nxt.unlock}` : "All islands unlocked ✅";
-  $("islandTag").className = "tag " + islandTagClass();
-  $("islandTag").textContent = "🏝️ " + island().name + " • " + msg;
-
-  // event tag
-  const ev = activeEvent();
-  $("eventName").textContent = ev ? ev.name : "None";
-  $("eventTag").className = "tag " + (ev ? "good" : "");
-}
-
-function renderPills(){
-  $("cash").textContent = fmt(save.cash);
-  $("pearls").textContent = fmt(save.pearls);
-  $("rep").textContent = fmt(save.rep);
-  $("happy").textContent = Math.round(save.happiness);
-  $("clean").textContent = Math.round(save.cleanliness);
-  $("season").textContent = season().name;
-
-  $("ips").textContent = totalIncomePerSec().toFixed(1);
-  $("cust").textContent = Math.round(customerRatePerMin());
-}
-
-function renderIslandsList(){
-  const el = $("islandsList");
-  el.innerHTML = "";
-  for(const isl of ISLANDS){
-    const locked = !save.unlockedIslands[isl.id];
-    const btnText = locked ? `Locked (⭐ ${isl.unlock})` : "Travel";
-    const can = !locked;
-
-    const node = document.createElement("div");
-    node.className = "item";
-    node.innerHTML = `
-      <div class="left">
-        <div class="name">🏝️ ${isl.name}</div>
-        <div class="desc">${isl.theme} • Guests: ${isl.guests} • Income x${isl.mult.toFixed(2)}</div>
-        <div class="bar" style="margin-top:8px">
-          <div style="width:${locked ? clamp((save.rep/isl.unlock)*100,0,100) : 100}%; background:${locked ? "rgba(255,209,102,.9)" : "rgba(46,242,193,.9)"}"></div>
-        </div>
-        <div class="small muted" style="margin-top:6px">${locked ? "Earn reputation to unlock." : "Unlocked ✅"}</div>
-      </div>
-      <div class="right">
-        <div class="price">${locked ? "—" : "Ready"}</div>
-        <button class="btn ${can?"":"ghost"}" ${can?"":"disabled"}> ${btnText} </button>
-      </div>
-    `;
-    node.querySelector("button").onclick = ()=>selectIsland(isl.id);
-    el.appendChild(node);
-  }
-}
-
-function renderUpgradesList(){
-  const el = $("upgradesList");
-  el.innerHTML = "";
-
-  const upgradeItems = [
-    { key:"ticketLv", label:"🎟️ Ticket Counter", desc:"Higher ticket revenue.", base:120, pow:1.45 },
-    { key:"snackLv", label:"🍿 Snack Stall", desc:"More snack income.", base:110, pow:1.45 },
-    { key:"decorLv", label:"✨ Decorations", desc:"Boost happiness + reputation.", base:140, pow:1.55 },
-    { key:"soundLv", label:"🔊 Sound System", desc:"Boost happiness + movie performance.", base:160, pow:1.55 },
-  ];
-
-  for(const u of upgradeItems){
-    const lv = save[u.key];
-    const cost = Math.floor(u.base * Math.pow(u.pow, lv-1));
-    const node = document.createElement("div");
-    node.className = "item";
-    node.innerHTML = `
-      <div class="left">
-        <div class="name">${u.label} <span class="muted">Lv ${lv}</span></div>
-        <div class="desc">${u.desc}</div>
-      </div>
-      <div class="right">
-        <div class="price">💵 ${fmt(cost)}</div>
-        <button class="btn secondary">Upgrade</button>
-      </div>
-    `;
-    node.querySelector("button").onclick = ()=>upgradeGlobal(u.key);
-    el.appendChild(node);
-  }
-
-  // transport
-  const t = transport();
-  const next = TRANSPORT[Math.min(save.transportId+1, TRANSPORT.length-1)];
-  const atMax = save.transportId >= TRANSPORT.length-1;
-  const cost = atMax ? 0 : Math.floor(260 * Math.pow(1.75, (save.transportId+1)-1));
-  const node = document.createElement("div");
-  node.className="item";
-  node.innerHTML = `
-    <div class="left">
-      <div class="name">🛥️ Transport <span class="muted">${t.name}</span></div>
-      <div class="desc">Increases customers & capacity. Next: ${atMax ? "MAX" : next.name}</div>
-    </div>
-    <div class="right">
-      <div class="price">${atMax ? "MAX" : "💵 "+fmt(cost)}</div>
-      <button class="btn secondary" ${atMax?"disabled":""}>Upgrade</button>
-    </div>
-  `;
-  node.querySelector("button").onclick = ()=>upgradeTransport();
-  el.appendChild(node);
-
-  // movie licensing list
-  for(const mv of MOVIES){
-    const owned = !!save.licensed[mv.id];
-    const node2 = document.createElement("div");
-    node2.className = "item";
-    node2.innerHTML = `
-      <div class="left">
-        <div class="name">🎞️ License: ${mv.name} <span class="muted">(${mv.genre})</span></div>
-        <div class="desc">Popularity x${mv.basePop.toFixed(2)} • Best on: ${mv.pref.map(i=>ISLANDS[i].name.split(" ")[0]).join(", ")}</div>
-      </div>
-      <div class="right">
-        <div class="price">${owned ? "Owned ✅" : "💵 "+fmt(mv.cost)}</div>
-        <button class="btn ${owned?"ghost":"secondary"}" ${owned?"disabled":""}>${owned?"Owned":"Buy"}</button>
-      </div>
-    `;
-    node2.querySelector("button").onclick = ()=>buyMovie(mv.id);
-    el.appendChild(node2);
-  }
-}
-
-function renderStaffList(){
-  const el = $("staffList");
-  el.innerHTML = "";
-  for(const st of STAFF){
-    const lv = save.staff[st.key];
-    const cost = Math.floor(st.baseCost * Math.pow(1.6, lv));
-    const node = document.createElement("div");
-    node.className="item";
-    node.innerHTML = `
-      <div class="left">
-        <div class="name">👥 ${st.name} <span class="muted">Lv ${lv}</span></div>
-        <div class="desc">${st.desc}</div>
-        <div class="small muted" style="margin-top:6px">Salary: 💵 ${st.salaryPerMin}/min per level</div>
-      </div>
-      <div class="right">
-        <div class="price">💵 ${fmt(cost)}</div>
-        <button class="btn secondary">Hire/Upgrade</button>
-      </div>
-    `;
-    node.querySelector("button").onclick = ()=>hireStaff(st.key);
-    el.appendChild(node);
-  }
-}
-
-function renderEventsList(){
-  const el = $("eventsList");
-  el.innerHTML = "";
-  const ev = activeEvent();
-  const activeText = ev ? `Active: ${ev.name}` : "No active event";
-  const activeLeft = ev ? Math.max(0, Math.floor((save.eventEndsAt-Date.now())/1000)) : 0;
-
-  const head = document.createElement("div");
-  head.className="miniChart";
-  head.innerHTML = `
-    <div>
-      <div class="label">Status</div>
-      <div class="val">${activeText}</div>
-    </div>
-    <div>
-      <div class="label">Time left</div>
-      <div class="val">${ev ? activeLeft+"s" : "—"}</div>
-    </div>
-  `;
-  el.appendChild(head);
-
-  for(const e of EVENTS){
-    const node = document.createElement("div");
-    node.className="item";
-    node.innerHTML = `
-      <div class="left">
-        <div class="name">🎉 ${e.name}</div>
-        <div class="desc">Income x${e.bonus.toFixed(2)} • Rep x${e.repBoost.toFixed(2)} • Duration ${e.durationSec}s</div>
-        <div class="small muted" style="margin-top:6px">Costs 2 Pearls to start. Reward: +${e.pearlReward} Pearls (more with Event Manager).</div>
-      </div>
-      <div class="right">
-        <div class="price">🐚 2</div>
-        <button class="btn">Start</button>
-      </div>
-    `;
-    node.querySelector("button").onclick = ()=>startEvent(e.id);
-    el.appendChild(node);
-  }
-}
-
-function renderScreens(){
-  const el = $("screensList");
-  el.innerHTML = "";
-  for(const sc of save.screens){
-    const st = SCREEN_TYPES[sc.id];
-    const mv = MOVIES.find(m=>m.id===sc.movieId) || MOVIES[0];
-    const income = screenIncomePerSec(sc);
-    const cost = Math.floor((120 * (1+sc.id*0.2)) * Math.pow(1.55, sc.level-1));
-    const pref = mv.pref.includes(save.islandId);
-    const prefTag = pref ? `<span class="tag good">Best pick</span>` : `<span class="tag warn">Not ideal</span>`;
-
-    // movie options
-    const opts = MOVIES.map(m=>{
-      const owned = !!save.licensed[m.id];
-      const mark = owned ? "" : " (lock)";
-      return `<option value="${m.id}" ${m.id===sc.movieId?"selected":""} ${owned?"":"disabled"}>${m.name}${mark}</option>`;
-    }).join("");
-
-    const node = document.createElement("div");
-    node.className="item";
-    node.innerHTML = `
-      <div class="left">
-        <div class="name">🎥 ${st.name} <span class="muted">Lv ${sc.level}</span></div>
-        <div class="desc">Movie: <strong>${mv.name}</strong> • ${prefTag}</div>
-        <div class="small muted" style="margin-top:6px">Income/sec: <strong>${income.toFixed(1)}</strong></div>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <span class="small muted">Schedule:</span>
-          <select data-screen="${sc.id}" style="padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:#fff">
-            ${opts}
-          </select>
+  card.innerHTML = `
+    <img class="card-poster" src="${m.p}" alt="${m.t}" loading="lazy" onerror="this.src='https://via.placeholder.com/342x513/1f1f1f/555?text=No+Image'" />
+    ${rank ? `<div class="card-rank">${rank}</div>` : ''}
+    ${progressHTML}
+    <div class="card-overlay">
+      <button class="card-play-btn" onclick="event.preventDefault();event.stopPropagation();">
+        ${playPath}
+      </button>
+      <div class="card-info">
+        <div class="card-name">${m.t}</div>
+        <div class="card-meta">
+          <span class="imdb">★ ${m.r}</span>
+          <span class="dot">•</span>
+          <span>${m.y}</span>
+          <span class="dot">•</span>
+          <span>${m.g}</span>
         </div>
       </div>
-      <div class="right">
-        <div class="price">💵 ${fmt(cost)}</div>
-        <button class="btn secondary">Upgrade</button>
-      </div>
-    `;
+    </div>
+    <div class="card-footer">
+      <div class="card-footer-name">${m.t}</div>
+      <div class="card-footer-year">${m.y} • ${m.g}</div>
+    </div>
+  `;
 
-    node.querySelector("button").onclick = ()=>upgradeScreen(sc.id);
-    node.querySelector("select").onchange = (e)=>setScreenMovie(sc.id, Number(e.target.value));
-
-    el.appendChild(node);
-  }
-}
-
-function renderDashboard(){
-  const bars = $("dashBars");
-  bars.innerHTML = "";
-
-  const next = nextLockedIsland();
-  const unlockText = next ? `${fmt(save.rep)} / ${fmt(next.unlock)} (next: ${next.name})` : "All unlocked ✅";
-  $("unlockProgress").textContent = unlockText;
-  $("transportName").textContent = transport().name;
-
-  const daily = totalIncomePerSec() * 86400;
-  $("dailyIncome").textContent = "💵 " + fmt(daily);
-  $("staffCost").textContent = "💵 " + staffCostPerMin().toFixed(1);
-
-  const metrics = [
-    { label:"Happiness", val:save.happiness, color:"rgba(46,242,193,.9)" },
-    { label:"Cleanliness", val:save.cleanliness, color:"rgba(255,209,102,.9)" },
-    { label:"Reputation progress", val: next ? clamp((save.rep/next.unlock)*100,0,100) : 100, color:"rgba(0,255,213,.85)" },
-    { label:"Customer flow", val: clamp((customerRatePerMin()/40)*100,0,100), color:"rgba(255,255,255,.7)" },
-  ];
-
-  for(const m of metrics){
-    const node = document.createElement("div");
-    node.className="miniChart";
-    node.innerHTML = `
-      <div>
-        <div class="label">${m.label}</div>
-        <div class="val">${m.val.toFixed(0)}%</div>
-      </div>
-      <div class="bar">
-        <div style="width:${m.val}%; background:${m.color}"></div>
-      </div>
-    `;
-    bars.appendChild(node);
-  }
-}
-
-function render(full=true){
-  renderPills();
-  renderScene();
-  renderScreens();
-  renderDashboard();
-
-  // Only re-render long lists when full render requested (faster)
-  if(full){
-    renderIslandsList();
-    renderUpgradesList();
-    renderStaffList();
-    renderEventsList();
-  }
-}
-
-/* =========================
-   TABS
-========================= */
-$("tabs").addEventListener("click",(e)=>{
-  const btn = e.target.closest("button[data-tab]");
-  if(!btn) return;
-  [...$("tabs").querySelectorAll("button")].forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  const tab = btn.dataset.tab;
-  ["islands","upgrades","staff","events","dashboard"].forEach(t=>{
-    $("tab-"+t).style.display = (t===tab) ? "" : "none";
+  // Play btn links to moviebox
+  card.querySelector('.card-play-btn').addEventListener('click', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    window.open(url, '_blank');
   });
+
+  // Long press / right click opens modal
+  card.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    openModal(m.t, m.y, '', m.r, m.g, m.p, m.d, url);
+  });
+
+  return card;
+}
+
+function populateRow(id, data, opts = {}) {
+  const row = document.getElementById(id);
+  data.forEach((m, i) => {
+    row.appendChild(buildCard(m, opts.ranked ? i + 1 : null, opts.tv, opts.wide, opts.cont ? m : null));
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+populateRow('trending-row', movies.trending);
+populateRow('top10-row', movies.top10, { ranked: true });
+populateRow('new-row', movies.newReleases);
+populateRow('tv-row', movies.tv, { tv: true });
+populateRow('continue-row', movies.continueWatching, { wide: true, cont: true });
+
+// ── NAVBAR SCROLL ─────────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
 });
 
-/* =========================
-   EXPORT / IMPORT / RESET
-========================= */
-$("btnExport").onclick = ()=>{
-  const data = JSON.stringify(save, null, 2);
-  navigator.clipboard?.writeText(data).then(()=>{
-    toast("Save copied to clipboard ✅ Paste it somewhere safe.");
-  }).catch(()=>{
-    toast("Copy failed. Manually copy from prompt.", "COPY");
-    prompt("Copy your save JSON:", data);
-  });
-};
+// ── GENRE PILLS ───────────────────────────────────────────────────────────────
+function setGenre(el) {
+  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  const genre = el.textContent;
+  const url = genre === 'All'
+    ? 'https://moviebox.ph'
+    : `https://moviebox.ph/genre/${slug(genre)}`;
+  window.open(url, '_blank');
+}
 
-$("btnImport").onclick = ()=>{
-  const raw = prompt("Paste your save JSON here:");
-  if(!raw) return;
-  try{
-    const obj = JSON.parse(raw);
-    const base = defaultSave();
-    save = deepMerge(base, obj);
-    persist();
-    render(true);
-    toast("Save imported ✅");
-  }catch{
-    toast("Invalid JSON. Import failed.");
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(title, year, runtime, rating, genre, poster, desc, url) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-img').src = poster;
+  document.getElementById('modal-img').alt = title;
+  document.getElementById('modal-desc').textContent = desc;
+  document.getElementById('modal-play').href = url || 'https://moviebox.ph';
+  document.getElementById('modal-meta').innerHTML = `
+    <span class="rating">★ ${rating}</span>
+    <span>${year}</span>
+    ${runtime ? `<span>•</span><span>${runtime}</span>` : ''}
+    <span>•</span><span>${genre}</span>
+    <span class="hd">HD</span>
+    <span class="hd">FREE</span>
+  `;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const q = e.target.value.trim();
+    if (q) window.open(`https://moviebox.ph/search?keyword=${encodeURIComponent(q)}`, '_blank');
   }
-};
+});
 
-$("btnReset").onclick = ()=>{
-  if(confirm("Reset game? This will erase your progress.")){
-    save = defaultSave();
-    persist();
-    render(true);
-    toast("Game reset ✅");
-  }
-};
-
-/* =========================
-   BUTTONS
-========================= */
-$("btnCollect").onclick = collectNow;
-$("btnWatchAd").onclick = watchAd;
-$("btnNextSeason").onclick = nextSeason;
-
-/* =========================
-   STARTUP + OFFLINE
-========================= */
-handleOffline();
-render(true);
-
-/* =========================
-   MAIN LOOP
-========================= */
-if(loop) clearInterval(loop);
-loop = setInterval(tick, 3000);
+// ── KEYBOARD ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
 </script>
+
 </body>
 </html>
