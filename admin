@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreamify Admin</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:white;
+  padding:20px;
+}
+.container{max-width:1200px;margin:auto}
+h1,h2{color:#d8b46a}
+.card{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+input,select,textarea,button{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #333;
+}
+input,select,textarea{
+  background:#111827;
+  color:white;
+}
+textarea{min-height:80px}
+button{
+  background:#d8b46a;
+  color:#07111f;
+  font-weight:bold;
+  cursor:pointer;
+}
+.btn-danger{background:#ff6b6b;color:white}
+.btn-dark{background:#222;color:white}
+.preview{
+  width:150px;
+  height:150px;
+  object-fit:cover;
+  border-radius:15px;
+  border:1px solid #444;
+  margin-top:10px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #333;
+  text-align:left;
+}
+.thumb{
+  width:60px;
+  height:60px;
+  object-fit:cover;
+  border-radius:10px;
+}
+.actions{
+  display:flex;
+  gap:8px;
+}
+.actions button{width:auto}
+a{color:#d8b46a}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Dreamify Admin Panel</h1>
+  <p><a href="index.html">View Customer Website</a></p>
+
+  <div class="card">
+    <h2>Website Information</h2>
+
+    <div class="grid">
+      <input id="brandName" placeholder="Brand Name">
+      <input id="heroText" placeholder="Hero Text">
+      <input id="whatsapp" placeholder="WhatsApp Number e.g. 960000000">
+      <button onclick="saveInfo()">Save Website Info</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="formTitle">Add Product</h2>
+
+    <input type="hidden" id="productId">
+
+    <div class="grid">
+      <input id="name" placeholder="Product Name">
+      
+      <select id="category">
+        <option value="Baby">Baby</option>
+        <option value="Perfume">Perfume</option>
+        <option value="Fashion">Fashion</option>
+        <option value="Offer">Offer</option>
+      </select>
+
+      <input id="price" type="number" placeholder="Price MVR">
+      <input id="oldPrice" type="number" placeholder="Old Price MVR">
+
+      <select id="stock">
+        <option value="in">In Stock</option>
+        <option value="low">Limited Stock</option>
+        <option value="out">Sold Out</option>
+      </select>
+
+      <input id="emoji" placeholder="Emoji e.g. 👶">
+      <input id="tag" placeholder="Badge e.g. Best Seller">
+      <input id="imageUrl" placeholder="Image URL or uploaded image">
+    </div>
+
+    <br>
+
+    <input id="imageFile" type="file" accept="image/*" onchange="uploadImage(event)">
+    <div id="imagePreview"></div>
+
+    <br>
+
+    <textarea id="description" placeholder="Product Description"></textarea>
+
+    <br><br>
+
+    <div class="grid">
+      <button onclick="saveProduct()">Save Product</button>
+      <button class="btn-dark" onclick="clearForm()">Clear Form</button>
+      <button class="btn-danger" onclick="removeImage()">Remove Image</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Product List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="productTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const DEFAULT_PRODUCTS = [
+  {
+    id:1,
+    name:"Premium Baby Outfit",
+    category:"Baby",
+    price:220,
+    oldPrice:280,
+    stock:"in",
+    emoji:"👶",
+    image:"",
+    tag:"New",
+    description:"Soft and comfortable baby outfit."
+  },
+  {
+    id:2,
+    name:"Rasees Rose Perfume",
+    category:"Perfume",
+    price:180,
+    oldPrice:220,
+    stock:"low",
+    emoji:"🌸",
+    image:"",
+    tag:"Best Seller",
+    description:"Elegant rose fragrance."
+  }
+];
+
+const DEFAULT_INFO = {
+  brandName:"Dreamify",
+  heroText:"Premium boutique shopping experience",
+  whatsapp:"960000000"
+};
+
+if(!localStorage.getItem("dreamifyProducts")){
+  localStorage.setItem("dreamifyProducts",JSON.stringify(DEFAULT_PRODUCTS));
+}
+
+if(!localStorage.getItem("dreamifyInfo")){
+  localStorage.setItem("dreamifyInfo",JSON.stringify(DEFAULT_INFO));
+}
+
+let products = JSON.parse(localStorage.getItem("dreamifyProducts")) || DEFAULT_PRODUCTS;
+
+function saveToStorage(){
+  localStorage.setItem("dreamifyProducts",JSON.stringify(products));
+  renderTable();
+}
+
+function loadInfo(){
+  const info = JSON.parse(localStorage.getItem("dreamifyInfo")) || DEFAULT_INFO;
+
+  document.getElementById("brandName").value = info.brandName || "";
+  document.getElementById("heroText").value = info.heroText || "";
+  document.getElementById("whatsapp").value = info.whatsapp || "";
+}
+
+function saveInfo(){
+  const info = {
+    brandName:document.getElementById("brandName").value.trim(),
+    heroText:document.getElementById("heroText").value.trim(),
+    whatsapp:document.getElementById("whatsapp").value.trim()
+  };
+
+  localStorage.setItem("dreamifyInfo",JSON.stringify(info));
+  alert("Website information saved");
+}
+
+function uploadImage(event){
+  const file = event.target.files[0];
+  if(!file)return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+    document.getElementById("imageUrl").value = e.target.result;
+    showPreview(e.target.result);
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function showPreview(src){
+  if(!src){
+    document.getElementById("imagePreview").innerHTML = "";
+    return;
+  }
+
+  document.getElementById("imagePreview").innerHTML =
+    `<img class="preview" src="${src}">`;
+}
+
+function removeImage(){
+  document.getElementById("imageUrl").value = "";
+  document.getElementById("imageFile").value = "";
+  showPreview("");
+}
+
+function saveProduct(){
+  const id = document.getElementById("productId").value;
+
+  const product = {
+    id:id ? Number(id) : Date.now(),
+    name:document.getElementById("name").value.trim(),
+    category:document.getElementById("category").value,
+    price:Number(document.getElementById("price").value),
+    oldPrice:Number(document.getElementById("oldPrice").value) || 0,
+    stock:document.getElementById("stock").value,
+    emoji:document.getElementById("emoji").value.trim() || "🛍️",
+    image:document.getElementById("imageUrl").value.trim(),
+    tag:document.getElementById("tag").value.trim() || "New",
+    description:document.getElementById("description").value.trim()
+  };
+
+  if(!product.name || !product.price){
+    alert("Please add product name and price");
+    return;
+  }
+
+  if(id){
+    products = products.map(p => p.id === Number(id) ? product : p);
+  }else{
+    products.push(product);
+  }
+
+  saveToStorage();
+  clearForm();
+  alert("Product saved. Refresh customer page to see update.");
+}
+
+function editProduct(id){
+  const p = products.find(item=>item.id===id);
+  if(!p)return;
+
+  document.getElementById("formTitle").innerText = "Edit Product";
+  document.getElementById("productId").value = p.id;
+  document.getElementById("name").value = p.name;
+  document.getElementById("category").value = p.category;
+  document.getElementById("price").value = p.price;
+  document.getElementById("oldPrice").value = p.oldPrice || "";
+  document.getElementById("stock").value = p.stock;
+  document.getElementById("emoji").value = p.emoji || "";
+  document.getElementById("tag").value = p.tag || "";
+  document.getElementById("imageUrl").value = p.image || "";
+  document.getElementById("description").value = p.description || "";
+
+  showPreview(p.image || "");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function deleteProduct(id){
+  if(!confirm("Delete this product?"))return;
+  products = products.filter(p=>p.id!==id);
+  saveToStorage();
+}
+
+function clearForm(){
+  document.getElementById("formTitle").innerText = "Add Product";
+  document.getElementById("productId").value = "";
+  document.getElementById("name").value = "";
+  document.getElementById("category").value = "Baby";
+  document.getElementById("price").value = "";
+  document.getElementById("oldPrice").value = "";
+  document.getElementById("stock").value = "in";
+  document.getElementById("emoji").value = "";
+  document.getElementById("tag").value = "";
+  document.getElementById("imageUrl").value = "";
+  document.getElementById("imageFile").value = "";
+  document.getElementById("description").value = "";
+  showPreview("");
+}
+
+function renderTable(){
+  const table = document.getElementById("productTable");
+
+  table.innerHTML = products.map(p=>`
+    <tr>
+      <td>
+        ${p.image 
+          ? `<img class="thumb" src="${p.image}">`
+          : `<span style="font-size:35px">${p.emoji || "🛍️"}</span>`
+        }
+      </td>
+      <td>
+        <b>${p.name}</b><br>
+        <small>${p.description || ""}</small>
+      </td>
+      <td>${p.category}</td>
+      <td>
+        MVR ${p.price}<br>
+        ${p.oldPrice ? `<small><s>MVR ${p.oldPrice}</s></small>` : ""}
+      </td>
+      <td>${p.stock}</td>
+      <td>
+        <div class="actions">
+          <button onclick="editProduct(${p.id})">Edit</button>
+          <button class="btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+loadInfo();
+renderTable();
+</script>
+
+</body>
+</html>
