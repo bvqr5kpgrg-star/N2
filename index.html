@@ -2,756 +2,1241 @@
 
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MovieBox — Stream Free</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Netflix+Sans:wght@400;500;700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AURUM — Luxury Redefined</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-  :root {
-    --red: #E50914;
-    --red-hover: #f40612;
-    --dark: #141414;
-    --dark2: #181818;
-    --dark3: #232323;
-    --card-bg: #1f1f1f;
-    --text: #e5e5e5;
-    --text-muted: #777;
-    --gold: #F5C518;
-    --radius: 4px;
-  }
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8d08a;
+  --gold-dark: #8b6914;
+  --cream: #f5f0e8;
+  --dark: #0a0905;
+  --mid: #1a1710;
+  --text: #d4c9b0;
+  --text-muted: #7a7160;
+}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 html { scroll-behavior: smooth; }
 
 body {
 background: var(–dark);
 color: var(–text);
-font-family: ‘Barlow’, sans-serif;
-min-height: 100vh;
+font-family: ‘Montserrat’, sans-serif;
+font-weight: 300;
 overflow-x: hidden;
+cursor: none;
 }
 
-/* ── NAV ── */
+/* CUSTOM CURSOR */
+.cursor {
+position: fixed;
+width: 8px; height: 8px;
+background: var(–gold);
+border-radius: 50%;
+pointer-events: none;
+z-index: 9999;
+transform: translate(-50%, -50%);
+transition: transform 0.1s ease;
+}
+.cursor-ring {
+position: fixed;
+width: 36px; height: 36px;
+border: 1px solid rgba(201,168,76,0.5);
+border-radius: 50%;
+pointer-events: none;
+z-index: 9998;
+transform: translate(-50%, -50%);
+transition: all 0.15s ease;
+}
+.cursor-ring.hovered {
+width: 60px; height: 60px;
+border-color: var(–gold);
+background: rgba(201,168,76,0.05);
+}
+
+/* CANVAS */
+#hero-canvas {
+position: fixed;
+top: 0; left: 0;
+width: 100vw; height: 100vh;
+z-index: 0;
+pointer-events: none;
+}
+
+/* NAV */
 nav {
-position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-display: flex; align-items: center; justify-content: space-between;
-padding: 0 4vw;
-height: 68px;
-background: linear-gradient(to bottom, rgba(0,0,0,.95) 0%, transparent 100%);
-transition: background .3s;
+position: fixed;
+top: 0; left: 0; right: 0;
+z-index: 100;
+padding: 28px 60px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+mix-blend-mode: normal;
+background: linear-gradient(to bottom, rgba(10,9,5,0.9) 0%, transparent 100%);
 }
-nav.scrolled { background: rgba(20,20,20,.98); box-shadow: 0 2px 12px rgba(0,0,0,.5); }
-
 .nav-logo {
-font-family: ‘Bebas Neue’, sans-serif;
-font-size: 2rem;
-color: var(–red);
-letter-spacing: 2px;
-text-decoration: none;
-display: flex; align-items: center; gap: 8px;
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 1.6rem;
+font-weight: 300;
+letter-spacing: 0.4em;
+color: var(–gold-light);
+text-transform: uppercase;
 }
-.nav-logo span { color: #fff; }
-
-.nav-links { display: flex; gap: 20px; list-style: none; }
+.nav-links {
+display: flex;
+gap: 48px;
+list-style: none;
+}
 .nav-links a {
-color: #ccc; text-decoration: none; font-size: .85rem;
-font-weight: 500; transition: color .2s; letter-spacing: .5px;
+color: var(–text-muted);
+text-decoration: none;
+font-size: 0.65rem;
+letter-spacing: 0.25em;
+text-transform: uppercase;
+transition: color 0.3s;
 }
-.nav-links a:hover, .nav-links a.active { color: #fff; }
-
-.nav-right { display: flex; align-items: center; gap: 16px; }
-
-.search-box {
-display: flex; align-items: center; gap: 8px;
-background: rgba(0,0,0,.6);
-border: 1px solid rgba(255,255,255,.25);
-border-radius: 4px; padding: 6px 12px;
-transition: border-color .2s, background .2s;
+.nav-links a:hover { color: var(–gold); }
+.nav-cta {
+font-size: 0.65rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–dark);
+background: var(–gold);
+padding: 10px 28px;
+text-decoration: none;
+transition: background 0.3s;
 }
-.search-box:focus-within { border-color: #fff; background: rgba(0,0,0,.85); }
-.search-box input {
-background: none; border: none; outline: none;
-color: #fff; font-size: .85rem; width: 160px;
-font-family: ‘Barlow’, sans-serif;
-}
-.search-box input::placeholder { color: #999; }
-.search-icon { color: #ccc; font-size: 1rem; }
+.nav-cta:hover { background: var(–gold-light); }
 
+/* HERO */
+#hero {
+position: relative;
+height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 1;
+}
+.hero-content {
+text-align: center;
+position: relative;
+z-index: 2;
+}
+.hero-eyebrow {
+font-size: 0.6rem;
+letter-spacing: 0.5em;
+text-transform: uppercase;
+color: var(–gold);
+margin-bottom: 28px;
+opacity: 0;
+animation: fadeUp 1s ease 0.5s forwards;
+}
+.hero-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: clamp(4rem, 10vw, 9rem);
+font-weight: 300;
+line-height: 0.9;
+letter-spacing: -0.02em;
+color: var(–cream);
+margin-bottom: 32px;
+opacity: 0;
+animation: fadeUp 1.2s ease 0.8s forwards;
+}
+.hero-title em {
+font-style: italic;
+color: var(–gold-light);
+}
+.hero-sub {
+font-size: 0.75rem;
+letter-spacing: 0.18em;
+color: var(–text-muted);
+max-width: 420px;
+margin: 0 auto 52px;
+line-height: 2;
+opacity: 0;
+animation: fadeUp 1s ease 1.1s forwards;
+}
+.hero-actions {
+display: flex;
+gap: 20px;
+justify-content: center;
+align-items: center;
+opacity: 0;
+animation: fadeUp 1s ease 1.4s forwards;
+}
 .btn-primary {
-background: var(–red); color: #fff;
-border: none; border-radius: var(–radius);
-padding: 8px 20px; font-size: .85rem; font-weight: 600;
-cursor: pointer; letter-spacing: .5px;
-transition: background .2s, transform .1s;
-text-decoration: none; display: inline-block;
-}
-.btn-primary:hover { background: var(–red-hover); transform: scale(1.03); }
-
-/* ── HERO ── */
-.hero {
-position: relative; height: 85vh; min-height: 520px;
-display: flex; align-items: flex-end;
-padding: 0 4vw 60px;
+display: inline-block;
+padding: 16px 48px;
+background: var(–gold);
+color: var(–dark);
+text-decoration: none;
+font-size: 0.65rem;
+letter-spacing: 0.25em;
+text-transform: uppercase;
+font-weight: 500;
+transition: all 0.3s ease;
+position: relative;
 overflow: hidden;
 }
-
-.hero-bg {
-position: absolute; inset: 0;
-background:
-linear-gradient(to right, rgba(20,20,20,.98) 30%, transparent 70%),
-linear-gradient(to top, rgba(20,20,20,.95) 0%, transparent 50%),
-url(‘https://image.tmdb.org/t/p/original/tmU7GeKVybMWFButWEGl2M4GeiP.jpg’) center/cover no-repeat;
-filter: brightness(.75);
+.btn-primary::before {
+content: ‘’;
+position: absolute;
+top: 0; left: -100%;
+width: 100%; height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+transition: left 0.5s ease;
 }
-
-.hero-badge {
-display: inline-flex; align-items: center; gap: 6px;
-background: var(–red); color: #fff;
-padding: 4px 10px; border-radius: 3px;
-font-size: .7rem; font-weight: 700; letter-spacing: 1.5px;
-text-transform: uppercase; margin-bottom: 12px;
-}
-
-.hero-content { position: relative; z-index: 2; max-width: 540px; }
-.hero-title {
-font-family: ‘Bebas Neue’, sans-serif;
-font-size: clamp(3rem, 7vw, 5.5rem);
-line-height: .95; letter-spacing: 1px;
-text-shadow: 2px 4px 20px rgba(0,0,0,.7);
-margin-bottom: 16px;
-}
-.hero-meta {
-display: flex; align-items: center; gap: 14px;
-margin-bottom: 14px; font-size: .85rem; color: #aaa;
-}
-.hero-meta .rating { color: var(–gold); font-weight: 700; }
-.hero-meta .year, .hero-meta .runtime { color: #888; }
-.hero-desc {
-font-size: 1rem; color: #ccc; line-height: 1.6;
-margin-bottom: 24px; max-width: 420px;
-display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-}
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-
-.btn-play {
-display: inline-flex; align-items: center; gap: 8px;
-background: #fff; color: #000;
-border: none; border-radius: var(–radius);
-padding: 12px 28px; font-size: 1rem; font-weight: 700;
-cursor: pointer; transition: background .2s, transform .1s;
+.btn-primary:hover::before { left: 100%; }
+.btn-primary:hover { background: var(–gold-light); transform: translateY(-2px); }
+.btn-ghost {
+display: inline-block;
+padding: 16px 48px;
+border: 1px solid rgba(201,168,76,0.4);
+color: var(–gold);
 text-decoration: none;
+font-size: 0.65rem;
+letter-spacing: 0.25em;
+text-transform: uppercase;
+transition: all 0.3s ease;
 }
-.btn-play:hover { background: rgba(255,255,255,.85); transform: scale(1.03); }
-.btn-play svg { width: 20px; height: 20px; }
+.btn-ghost:hover {
+border-color: var(–gold);
+background: rgba(201,168,76,0.08);
+}
+.scroll-indicator {
+position: absolute;
+bottom: 48px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 12px;
+opacity: 0;
+animation: fadeIn 1s ease 2s forwards;
+}
+.scroll-line {
+width: 1px;
+height: 60px;
+background: linear-gradient(to bottom, var(–gold), transparent);
+animation: scrollPulse 2s ease infinite;
+}
+.scroll-text {
+font-size: 0.55rem;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+color: var(–text-muted);
+}
 
-.btn-info {
-display: inline-flex; align-items: center; gap: 8px;
-background: rgba(109,109,110,.7); color: #fff;
-border: none; border-radius: var(–radius);
-padding: 12px 24px; font-size: 1rem; font-weight: 600;
-cursor: pointer; backdrop-filter: blur(4px);
-transition: background .2s; text-decoration: none;
-}
-.btn-info:hover { background: rgba(109,109,110,.5); }
-
-/* ── GENRE TABS ── */
-.genre-bar {
-display: flex; align-items: center; gap: 8px;
-padding: 20px 4vw 0; flex-wrap: wrap;
-}
-.genre-pill {
-background: rgba(255,255,255,.08);
-color: #aaa; border: 1px solid rgba(255,255,255,.12);
-padding: 7px 16px; border-radius: 20px;
-font-size: .8rem; font-weight: 500;
-cursor: pointer; transition: all .2s; letter-spacing: .3px;
+/* MARQUEE STRIP */
+.marquee-strip {
+position: relative;
+z-index: 2;
+background: var(–gold);
+padding: 14px 0;
+overflow: hidden;
 white-space: nowrap;
 }
-.genre-pill:hover { background: rgba(255,255,255,.15); color: #fff; }
-.genre-pill.active { background: var(–red); color: #fff; border-color: var(–red); }
+.marquee-track {
+display: inline-flex;
+animation: marquee 20s linear infinite;
+}
+.marquee-item {
+font-size: 0.6rem;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+color: var(–dark);
+font-weight: 500;
+padding: 0 48px;
+}
+.marquee-dot {
+color: rgba(10,9,5,0.4);
+font-size: 0.5rem;
+}
 
-/* ── ROWS ── */
-.row-section { padding: 40px 0 10px; }
-.row-header {
-display: flex; align-items: center; justify-content: space-between;
-padding: 0 4vw; margin-bottom: 16px;
-}
-.row-title {
-font-size: 1.25rem; font-weight: 700; letter-spacing: .3px;
-display: flex; align-items: center; gap: 10px;
-}
-.row-title .accent { color: var(–red); font-size: .85em; }
-.see-all {
-color: var(–red); font-size: .8rem; font-weight: 600;
-text-decoration: none; letter-spacing: .5px;
-transition: color .2s; cursor: pointer;
-}
-.see-all:hover { color: #ff3d3d; }
-
-.cards-scroll {
-display: flex; gap: 10px;
-overflow-x: auto; padding: 8px 4vw 20px;
-scroll-behavior: smooth;
-scrollbar-width: none;
-}
-.cards-scroll::-webkit-scrollbar { display: none; }
-
-/* ── CARD ── */
-.card {
-flex: 0 0 auto;
-width: 185px; border-radius: 6px;
-overflow: hidden; cursor: pointer;
+/* SECTIONS */
+section {
 position: relative;
-transition: transform .3s cubic-bezier(.25,.46,.45,.94), box-shadow .3s;
-background: var(–card-bg);
-text-decoration: none; color: inherit;
-}
-.card:hover {
-transform: scale(1.08) translateY(-4px);
-box-shadow: 0 16px 40px rgba(0,0,0,.7);
-z-index: 10;
+z-index: 2;
 }
 
-.card-poster {
-width: 100%; aspect-ratio: 2/3;
-object-fit: cover; display: block;
-background: var(–dark3);
-transition: filter .3s;
+/* PHILOSOPHY */
+#philosophy {
+padding: 160px 60px;
+max-width: 1400px;
+margin: 0 auto;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 120px;
+align-items: center;
 }
-.card:hover .card-poster { filter: brightness(.55); }
+.section-tag {
+font-size: 0.55rem;
+letter-spacing: 0.4em;
+text-transform: uppercase;
+color: var(–gold);
+margin-bottom: 24px;
+display: flex;
+align-items: center;
+gap: 16px;
+}
+.section-tag::before {
+content: ‘’;
+width: 32px; height: 1px;
+background: var(–gold);
+}
+.philosophy-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: clamp(2.5rem, 4vw, 4.5rem);
+font-weight: 300;
+line-height: 1.1;
+color: var(–cream);
+margin-bottom: 32px;
+}
+.philosophy-title em {
+font-style: italic;
+color: var(–gold-light);
+}
+.philosophy-text {
+font-size: 0.8rem;
+line-height: 2.4;
+color: var(–text-muted);
+margin-bottom: 40px;
+}
+.stat-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 32px;
+}
+.stat-item {
+border-top: 1px solid rgba(201,168,76,0.2);
+padding-top: 20px;
+}
+.stat-number {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 3rem;
+font-weight: 300;
+color: var(–gold);
+line-height: 1;
+}
+.stat-label {
+font-size: 0.6rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–text-muted);
+margin-top: 6px;
+}
+.philosophy-visual {
+position: relative;
+height: 560px;
+}
+.geo-frame {
+position: absolute;
+inset: 0;
+border: 1px solid rgba(201,168,76,0.15);
+}
+.geo-inner {
+position: absolute;
+top: 24px; left: 24px; right: 24px; bottom: 24px;
+border: 1px solid rgba(201,168,76,0.08);
+background: linear-gradient(135deg, rgba(201,168,76,0.04) 0%, transparent 60%);
+}
+.geo-accent {
+position: absolute;
+top: -1px; right: 60px;
+width: 80px; height: 1px;
+background: var(–gold);
+}
+.geo-accent-v {
+position: absolute;
+bottom: 60px; right: -1px;
+width: 1px; height: 80px;
+background: var(–gold);
+}
+.geo-orb {
+position: absolute;
+top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+width: 260px; height: 260px;
+border-radius: 50%;
+background: radial-gradient(circle at 35% 35%, rgba(201,168,76,0.2), rgba(201,168,76,0.02) 60%, transparent);
+border: 1px solid rgba(201,168,76,0.15);
+animation: orbPulse 4s ease-in-out infinite;
+}
+.geo-ring {
+position: absolute;
+top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+width: 360px; height: 360px;
+border-radius: 50%;
+border: 1px solid rgba(201,168,76,0.06);
+animation: orbPulse 4s ease-in-out infinite 1s;
+}
+.geo-cross-h {
+position: absolute;
+top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+width: 200px; height: 1px;
+background: linear-gradient(to right, transparent, rgba(201,168,76,0.3), transparent);
+}
+.geo-cross-v {
+position: absolute;
+top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+width: 1px; height: 200px;
+background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.3), transparent);
+}
+.geo-label {
+position: absolute;
+bottom: 40px;
+left: 40px;
+font-size: 0.55rem;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+color: var(–text-muted);
+}
 
-.card-overlay {
-position: absolute; inset: 0;
-background: linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 55%);
-opacity: 0; transition: opacity .3s;
-display: flex; flex-direction: column; justify-content: flex-end;
-padding: 14px;
+/* SERVICES */
+#services {
+padding: 120px 60px;
+background: var(–mid);
 }
-.card:hover .card-overlay { opacity: 1; }
+.services-inner {
+max-width: 1400px;
+margin: 0 auto;
+}
+.services-header {
+display: flex;
+justify-content: space-between;
+align-items: flex-end;
+margin-bottom: 80px;
+}
+.services-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: clamp(2rem, 4vw, 4rem);
+font-weight: 300;
+color: var(–cream);
+}
+.services-title em { font-style: italic; color: var(–gold-light); }
+.services-desc {
+max-width: 320px;
+font-size: 0.75rem;
+line-height: 2;
+color: var(–text-muted);
+}
+.services-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 2px;
+}
+.service-card {
+padding: 52px 40px;
+border: 1px solid rgba(201,168,76,0.08);
+background: rgba(10,9,5,0.6);
+position: relative;
+overflow: hidden;
+transition: all 0.4s ease;
+cursor: default;
+}
+.service-card::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0;
+width: 100%; height: 3px;
+background: linear-gradient(to right, var(–gold-dark), var(–gold));
+transform: scaleX(0);
+transform-origin: left;
+transition: transform 0.4s ease;
+}
+.service-card:hover::before { transform: scaleX(1); }
+.service-card:hover { background: rgba(201,168,76,0.03); transform: translateY(-4px); }
+.service-num {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 3.5rem;
+font-weight: 300;
+color: rgba(201,168,76,0.12);
+line-height: 1;
+margin-bottom: 32px;
+transition: color 0.4s;
+}
+.service-card:hover .service-num { color: rgba(201,168,76,0.25); }
+.service-name {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 1.6rem;
+font-weight: 400;
+color: var(–cream);
+margin-bottom: 16px;
+}
+.service-text {
+font-size: 0.72rem;
+line-height: 2.2;
+color: var(–text-muted);
+margin-bottom: 32px;
+}
+.service-link {
+font-size: 0.6rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–gold);
+text-decoration: none;
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.service-link::after {
+content: ‘→’;
+transition: transform 0.3s;
+}
+.service-card:hover .service-link::after { transform: translateX(6px); }
 
-.card-play-btn {
-width: 36px; height: 36px; border-radius: 50%;
-background: var(–red); border: none;
-display: flex; align-items: center; justify-content: center;
-cursor: pointer; margin-bottom: 10px;
-transition: transform .2s, background .2s;
-flex-shrink: 0;
+/* FEATURED */
+#featured {
+padding: 160px 60px;
+max-width: 1400px;
+margin: 0 auto;
 }
-.card-play-btn:hover { transform: scale(1.15); background: var(–red-hover); }
-.card-play-btn svg { width: 14px; height: 14px; fill: #fff; margin-left: 2px; }
-
-.card-info { }
-.card-name {
-font-size: .78rem; font-weight: 700; line-height: 1.3;
-margin-bottom: 4px; color: #fff;
-white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.featured-label {
+font-size: 0.55rem;
+letter-spacing: 0.4em;
+text-transform: uppercase;
+color: var(–gold);
+margin-bottom: 60px;
+display: flex;
+align-items: center;
+gap: 16px;
 }
-.card-meta {
-display: flex; align-items: center; gap: 6px;
-font-size: .68rem; color: #aaa;
+.featured-label::before {
+content: ‘’;
+width: 32px; height: 1px;
+background: var(–gold);
 }
-.card-meta .imdb { color: var(–gold); font-weight: 700; font-size: .65rem; }
-.card-meta .dot { color: #555; }
-
-.card-footer {
-padding: 8px 10px 10px;
-background: var(–dark2);
+.featured-grid {
+display: grid;
+grid-template-columns: 1.4fr 1fr;
+grid-template-rows: auto auto;
+gap: 24px;
 }
-.card-footer-name {
-font-size: .75rem; font-weight: 600; color: #ddd;
-white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.feat-card {
+position: relative;
+overflow: hidden;
+background: var(–mid);
+border: 1px solid rgba(201,168,76,0.08);
 }
-.card-footer-year { font-size: .68rem; color: #666; margin-top: 1px; }
-
-/* ── TOP 10 CARD ── */
-.card-top {
-width: 210px;
-}
-.card-top .card-rank {
-position: absolute; bottom: 44px; left: -10px;
-font-family: ‘Bebas Neue’, sans-serif;
-font-size: 5.5rem; line-height: 1;
-color: transparent;
--webkit-text-stroke: 3px rgba(255,255,255,.9);
-text-shadow: 2px 4px 12px rgba(0,0,0,.8);
-pointer-events: none; z-index: 5;
-}
-
-/* ── FEATURED WIDE CARD ── */
-.card-wide {
-width: 300px;
-}
-.card-wide .card-poster {
-aspect-ratio: 16/9;
-}
-
-/* ── CONTINUE WATCHING ── */
-.progress-bar {
-position: absolute; bottom: 44px; left: 0; right: 0; height: 3px;
-background: rgba(255,255,255,.2);
-}
-.progress-fill {
-height: 100%; background: var(–red);
-border-radius: 0 2px 2px 0;
-}
-
-/* ── MARQUEE BANNER ── */
-.marquee-wrap {
-overflow: hidden; white-space: nowrap;
-padding: 12px 0; background: var(–red);
-font-size: .75rem; font-weight: 700; letter-spacing: 2px;
-text-transform: uppercase; color: rgba(255,255,255,.8);
-}
-.marquee-inner {
-display: inline-block;
-animation: marquee 22s linear infinite;
-}
-.marquee-inner span { margin: 0 40px; }
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-/* ── FOOTER ── */
-footer {
-padding: 40px 4vw; background: #0a0a0a;
-border-top: 1px solid rgba(255,255,255,.06);
-margin-top: 40px;
-}
-.footer-logo {
-font-family: ‘Bebas Neue’, sans-serif;
-font-size: 1.6rem; color: var(–red); margin-bottom: 12px;
-}
-.footer-links {
-display: flex; flex-wrap: wrap; gap: 10px 24px;
-list-style: none; margin-bottom: 16px;
-}
-.footer-links a { color: #666; font-size: .8rem; text-decoration: none; }
-.footer-links a:hover { color: #aaa; }
-.footer-copy { color: #444; font-size: .75rem; }
-
-/* ── MODAL ── */
-.modal-overlay {
-display: none;
-position: fixed; inset: 0; z-index: 200;
-background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
-align-items: center; justify-content: center;
-padding: 20px;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-background: var(–dark2);
-border-radius: 10px; max-width: 560px; width: 100%;
-overflow: hidden; position: relative;
-box-shadow: 0 30px 80px rgba(0,0,0,.8);
-animation: modalIn .25s ease;
-}
-@keyframes modalIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-.modal-hero {
-position: relative; aspect-ratio: 16/9; background: var(–dark3);
+.feat-card.large { grid-row: 1/3; }
+.feat-visual {
+height: 100%;
+min-height: 300px;
+background: linear-gradient(135deg, var(–mid), var(–dark));
+position: relative;
 overflow: hidden;
 }
-.modal-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.modal-hero::after {
-content: ‘’; position: absolute; inset: 0;
-background: linear-gradient(to top, var(–dark2) 0%, transparent 60%);
+.feat-card.large .feat-visual { min-height: 600px; }
+.feat-glow {
+position: absolute;
+border-radius: 50%;
+filter: blur(80px);
+opacity: 0.3;
+animation: glowPulse 5s ease-in-out infinite;
 }
-.modal-close {
-position: absolute; top: 14px; right: 14px; z-index: 10;
-width: 32px; height: 32px; border-radius: 50%;
-background: rgba(0,0,0,.7); border: none; color: #fff;
-font-size: 1.1rem; cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-transition: background .2s;
+.feat-glow-1 {
+width: 300px; height: 300px;
+background: var(–gold-dark);
+top: -50px; right: -50px;
 }
-.modal-close:hover { background: rgba(0,0,0,.9); }
-.modal-body { padding: 20px 24px 24px; }
-.modal-title {
-font-family: ‘Bebas Neue’, sans-serif;
-font-size: 2rem; letter-spacing: .5px; margin-bottom: 8px;
+.feat-glow-2 {
+width: 200px; height: 200px;
+background: rgba(201,168,76,0.5);
+bottom: 30px; left: 30px;
+animation-delay: 2.5s;
 }
-.modal-meta {
-display: flex; gap: 12px; flex-wrap: wrap;
-font-size: .78rem; color: #888; margin-bottom: 12px; align-items: center;
+.feat-info {
+padding: 32px;
+border-top: 1px solid rgba(201,168,76,0.1);
 }
-.modal-meta .rating { color: var(–gold); font-weight: 700; }
-.modal-meta .hd { border: 1px solid #666; padding: 1px 5px; border-radius: 2px; font-size: .65rem; }
-.modal-desc { font-size: .88rem; color: #bbb; line-height: 1.6; margin-bottom: 20px; }
-.modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.feat-cat {
+font-size: 0.55rem;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+color: var(–gold);
+margin-bottom: 10px;
+}
+.feat-name {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 1.5rem;
+font-weight: 400;
+color: var(–cream);
+}
+.feat-card.large .feat-name { font-size: 2.2rem; }
 
-/* ── LOADING SKELETON ── */
-.skeleton {
-background: linear-gradient(90deg, var(–dark3) 25%, #2a2a2a 50%, var(–dark3) 75%);
-background-size: 200% 100%;
-animation: shimmer 1.5s infinite;
-border-radius: 6px;
+/* TESTIMONIALS */
+#testimonials {
+padding: 140px 60px;
+background: var(–mid);
 }
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.test-inner {
+max-width: 900px;
+margin: 0 auto;
+text-align: center;
+}
+.test-header {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: clamp(1.8rem, 3vw, 3rem);
+font-weight: 300;
+color: var(–cream);
+margin-bottom: 80px;
+}
+.test-header em { font-style: italic; color: var(–gold-light); }
+.testimonial-cards {
+display: flex;
+flex-direction: column;
+gap: 48px;
+}
+.testimonial {
+padding: 48px;
+border: 1px solid rgba(201,168,76,0.1);
+position: relative;
+text-align: left;
+}
+.testimonial::before {
+content: ‘”’;
+position: absolute;
+top: -24px; left: 40px;
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 8rem;
+color: rgba(201,168,76,0.1);
+line-height: 1;
+}
+.testimonial-text {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 1.4rem;
+font-weight: 300;
+font-style: italic;
+line-height: 1.7;
+color: var(–cream);
+margin-bottom: 28px;
+}
+.testimonial-author {
+font-size: 0.6rem;
+letter-spacing: 0.25em;
+text-transform: uppercase;
+color: var(–gold);
+}
+.testimonial-role {
+font-size: 0.6rem;
+letter-spacing: 0.15em;
+color: var(–text-muted);
+margin-top: 4px;
+}
 
-/* ── RESPONSIVE ── */
-@media (max-width: 700px) {
-.nav-links { display: none; }
-.search-box input { width: 100px; }
-.hero { height: 70vh; }
-.hero-bg { background:
-linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,.5) 50%),
-url(‘https://image.tmdb.org/t/p/original/tmU7GeKVybMWFButWEGl2M4GeiP.jpg’) center/cover; }
-.card { width: 140px; }
-.card-wide { width: 230px; }
-.card-top { width: 160px; }
+/* CTA */
+#cta {
+padding: 160px 60px;
+text-align: center;
+position: relative;
+overflow: hidden;
 }
+.cta-bg-lines {
+position: absolute;
+inset: 0;
+background-image:
+linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+background-size: 80px 80px;
+mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+.cta-glow {
+position: absolute;
+top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+width: 600px; height: 600px;
+background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+border-radius: 50%;
+}
+.cta-inner { position: relative; z-index: 2; }
+.cta-title {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: clamp(3rem, 7vw, 7rem);
+font-weight: 300;
+line-height: 1;
+color: var(–cream);
+margin-bottom: 32px;
+}
+.cta-title em { font-style: italic; color: var(–gold-light); }
+.cta-sub {
+font-size: 0.75rem;
+letter-spacing: 0.18em;
+color: var(–text-muted);
+margin-bottom: 52px;
+line-height: 2;
+}
+.cta-actions {
+display: flex;
+gap: 20px;
+justify-content: center;
+}
+
+/* FOOTER */
+footer {
+padding: 80px 60px 40px;
+border-top: 1px solid rgba(201,168,76,0.1);
+background: var(–dark);
+}
+.footer-top {
+display: grid;
+grid-template-columns: 2fr 1fr 1fr 1fr;
+gap: 80px;
+margin-bottom: 80px;
+}
+.footer-brand {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 2rem;
+font-weight: 300;
+letter-spacing: 0.3em;
+color: var(–gold-light);
+margin-bottom: 20px;
+}
+.footer-tagline {
+font-size: 0.7rem;
+line-height: 2;
+color: var(–text-muted);
+max-width: 280px;
+}
+.footer-col-title {
+font-size: 0.55rem;
+letter-spacing: 0.35em;
+text-transform: uppercase;
+color: var(–gold);
+margin-bottom: 24px;
+}
+.footer-links {
+list-style: none;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+.footer-links a {
+color: var(–text-muted);
+text-decoration: none;
+font-size: 0.72rem;
+transition: color 0.3s;
+}
+.footer-links a:hover { color: var(–cream); }
+.footer-bottom {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding-top: 40px;
+border-top: 1px solid rgba(201,168,76,0.06);
+}
+.footer-copy {
+font-size: 0.6rem;
+letter-spacing: 0.1em;
+color: var(–text-muted);
+}
+.footer-legal {
+display: flex;
+gap: 32px;
+}
+.footer-legal a {
+font-size: 0.6rem;
+letter-spacing: 0.1em;
+color: var(–text-muted);
+text-decoration: none;
+transition: color 0.3s;
+}
+.footer-legal a:hover { color: var(–gold); }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(30px); }
+to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+@keyframes scrollPulse {
+0%, 100% { opacity: 0.5; transform: scaleY(1); }
+50% { opacity: 1; transform: scaleY(1.2); }
+}
+@keyframes marquee {
+from { transform: translateX(0); }
+to { transform: translateX(-50%); }
+}
+@keyframes orbPulse {
+0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.05); }
+}
+@keyframes glowPulse {
+0%, 100% { opacity: 0.25; }
+50% { opacity: 0.45; }
+}
+
+/* SCROLL REVEAL */
+.reveal {
+opacity: 0;
+transform: translateY(40px);
+transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.reveal.visible {
+opacity: 1;
+transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
 </style>
 
 </head>
 <body>
 
+<!-- CUSTOM CURSOR -->
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- THREE.JS CANVAS -->
+
+<canvas id="hero-canvas"></canvas>
+
 <!-- NAV -->
 
-<nav id="navbar">
-  <a class="nav-logo" href="https://moviebox.ph" target="_blank">MOVIE<span>BOX</span></a>
+<nav>
+  <div class="nav-logo">Aurum</div>
   <ul class="nav-links">
-    <li><a href="https://moviebox.ph" target="_blank" class="active">Home</a></li>
-    <li><a href="https://moviebox.ph/movie" target="_blank">Movies</a></li>
-    <li><a href="https://moviebox.ph/tv" target="_blank">TV Shows</a></li>
-    <li><a href="https://moviebox.ph/top" target="_blank">Top Rated</a></li>
-    <li><a href="https://moviebox.ph/new" target="_blank">New Releases</a></li>
+    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#featured">Work</a></li>
+    <li><a href="#testimonials">Stories</a></li>
   </ul>
-  <div class="nav-right">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search titles..." id="searchInput" />
-    </div>
-    <a class="btn-primary" href="https://moviebox.ph" target="_blank">Watch Free</a>
-  </div>
+  <a href="#cta" class="nav-cta">Begin</a>
 </nav>
 
 <!-- HERO -->
 
-<section class="hero">
-  <div class="hero-bg"></div>
+<section id="hero">
   <div class="hero-content">
-    <div class="hero-badge">🔴 Now Streaming</div>
-    <h1 class="hero-title">Dune:<br>Part Two</h1>
-    <div class="hero-meta">
-      <span class="rating">★ 8.5</span>
-      <span class="year">2024</span>
-      <span class="dot">•</span>
-      <span class="runtime">2h 46m</span>
-      <span class="dot">•</span>
-      <span>Sci-Fi</span>
-    </div>
-    <p class="hero-desc">Paul Atreides unites with Chani and the Fremen while on a path of revenge against those who destroyed his family. Facing a choice between the love of his life and the fate of the known universe.</p>
+    <p class="hero-eyebrow">Est. MMXV · Bespoke Excellence</p>
+    <h1 class="hero-title">Where Vision<br>Meets <em>Mastery</em></h1>
+    <p class="hero-sub">We craft experiences that transcend the ordinary. Each project is an act of precision — designed to endure, created to captivate.</p>
     <div class="hero-actions">
-      <a class="btn-play" href="https://moviebox.ph/watch-movie/dune-part-two" target="_blank">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Play Now
-      </a>
-      <button class="btn-info" onclick="openModal('Dune: Part Two','2024','2h 46m','8.5','Sci-Fi / Adventure','https://image.tmdb.org/t/p/w780/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg','Paul Atreides unites with Chani and the Fremen on a path of revenge against those who destroyed his family, facing a choice between love and the fate of the universe.','https://moviebox.ph/watch-movie/dune-part-two')">ℹ More Info</button>
+      <a href="#featured" class="btn-primary">Explore Work</a>
+      <a href="#philosophy" class="btn-ghost">Our Philosophy</a>
     </div>
   </div>
+  <div class="scroll-indicator">
+    <div class="scroll-line"></div>
+    <span class="scroll-text">Scroll</span>
+  </div>
 </section>
-
-<!-- GENRE TABS -->
-
-<div class="genre-bar">
-  <span class="genre-pill active" onclick="setGenre(this)">All</span>
-  <span class="genre-pill" onclick="setGenre(this)">Action</span>
-  <span class="genre-pill" onclick="setGenre(this)">Drama</span>
-  <span class="genre-pill" onclick="setGenre(this)">Comedy</span>
-  <span class="genre-pill" onclick="setGenre(this)">Horror</span>
-  <span class="genre-pill" onclick="setGenre(this)">Sci-Fi</span>
-  <span class="genre-pill" onclick="setGenre(this)">Thriller</span>
-  <span class="genre-pill" onclick="setGenre(this)">Romance</span>
-  <span class="genre-pill" onclick="setGenre(this)">Animation</span>
-  <span class="genre-pill" onclick="setGenre(this)">Documentary</span>
-</div>
 
 <!-- MARQUEE -->
 
-<div class="marquee-wrap" style="margin-top:24px;">
-  <div class="marquee-inner">
-    <span>FREE TO WATCH</span><span>NO SUBSCRIPTION</span><span>4K QUALITY</span><span>LATEST RELEASES</span>
-    <span>MOVIES & TV SHOWS</span><span>WATCH ANYTIME</span><span>FREE TO WATCH</span><span>NO SUBSCRIPTION</span>
-    <span>4K QUALITY</span><span>LATEST RELEASES</span><span>MOVIES & TV SHOWS</span><span>WATCH ANYTIME</span>
+<div class="marquee-strip">
+  <div class="marquee-track">
+    <span class="marquee-item">Bespoke Design</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Precision Craft</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Timeless Aesthetic</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Strategic Vision</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Luxury Standards</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Global Excellence</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Bespoke Design</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Precision Craft</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Timeless Aesthetic</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Strategic Vision</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Luxury Standards</span><span class="marquee-dot">◆</span>
+    <span class="marquee-item">Global Excellence</span><span class="marquee-dot">◆</span>
   </div>
 </div>
 
-<!-- TRENDING ROW -->
+<!-- PHILOSOPHY -->
 
-<section class="row-section">
-  <div class="row-header">
-    <div class="row-title">🔥 Trending Now <span class="accent">POPULAR</span></div>
-    <a class="see-all" href="https://moviebox.ph/trending" target="_blank">See All →</a>
+<section id="philosophy">
+  <div class="reveal">
+    <p class="section-tag">Our Philosophy</p>
+    <h2 class="philosophy-title">Beauty is not a<br>luxury — it's a<br><em>language</em></h2>
+    <p class="philosophy-text">We believe that great design is felt before it is seen. Every curve, every weight, every pause carries meaning. Our work begins where trends end — in the quiet space where intention becomes form.</p>
+    <div class="stat-grid">
+      <div class="stat-item reveal reveal-delay-1">
+        <div class="stat-number">340+</div>
+        <div class="stat-label">Projects Delivered</div>
+      </div>
+      <div class="stat-item reveal reveal-delay-2">
+        <div class="stat-number">18</div>
+        <div class="stat-label">Countries Served</div>
+      </div>
+      <div class="stat-item reveal reveal-delay-3">
+        <div class="stat-number">97%</div>
+        <div class="stat-label">Client Retention</div>
+      </div>
+      <div class="stat-item reveal reveal-delay-4">
+        <div class="stat-number">11</div>
+        <div class="stat-label">Years of Excellence</div>
+      </div>
+    </div>
   </div>
-  <div class="cards-scroll" id="trending-row"></div>
+  <div class="philosophy-visual reveal">
+    <div class="geo-frame"></div>
+    <div class="geo-inner"></div>
+    <div class="geo-accent"></div>
+    <div class="geo-accent-v"></div>
+    <div class="geo-orb"></div>
+    <div class="geo-ring"></div>
+    <div class="geo-cross-h"></div>
+    <div class="geo-cross-v"></div>
+    <div class="geo-label">Precision at Scale</div>
+  </div>
 </section>
 
-<!-- TOP 10 ROW -->
+<!-- SERVICES -->
 
-<section class="row-section">
-  <div class="row-header">
-    <div class="row-title">🏆 Top 10 <span class="accent">THIS WEEK</span></div>
-    <a class="see-all" href="https://moviebox.ph/top" target="_blank">See All →</a>
+<section id="services">
+  <div class="services-inner">
+    <div class="services-header reveal">
+      <div>
+        <p class="section-tag">What We Do</p>
+        <h2 class="services-title">A Suite of<br><em>Rare Capabilities</em></h2>
+      </div>
+      <p class="services-desc">We work exclusively with founders, institutions, and brands that understand the difference between good and extraordinary.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-num">01</div>
+        <h3 class="service-name">Brand Identity</h3>
+        <p class="service-text">The architecture of perception. We build brands that occupy the highest tier of their category — logos, systems, and stories that endure decades.</p>
+        <a href="#" class="service-link">Explore Service</a>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-num">02</div>
+        <h3 class="service-name">Digital Experience</h3>
+        <p class="service-text">Websites and platforms that convert at the speed of desire. Built with obsessive attention to motion, hierarchy, and intention.</p>
+        <a href="#" class="service-link">Explore Service</a>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-num">03</div>
+        <h3 class="service-name">Creative Direction</h3>
+        <p class="service-text">Vision before execution. We sit alongside decision-makers to ensure every touchpoint speaks with singular, unmistakable clarity.</p>
+        <a href="#" class="service-link">Explore Service</a>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-num">04</div>
+        <h3 class="service-name">Art Direction</h3>
+        <p class="service-text">Photography. Film. Space. We shape how your world is seen — with an eye trained on the extraordinary and a standard set by the finest.</p>
+        <a href="#" class="service-link">Explore Service</a>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-num">05</div>
+        <h3 class="service-name">Strategy & Positioning</h3>
+        <p class="service-text">Intelligence applied to ambition. We identify the precise territory you should own, and build the language to claim it with authority.</p>
+        <a href="#" class="service-link">Explore Service</a>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-num">06</div>
+        <h3 class="service-name">Bespoke Consulting</h3>
+        <p class="service-text">For those who require total discretion and singular focus. A private engagement, tailored entirely to your vision and timeline.</p>
+        <a href="#" class="service-link">Explore Service</a>
+      </div>
+    </div>
   </div>
-  <div class="cards-scroll" id="top10-row"></div>
 </section>
 
-<!-- NEW RELEASES -->
+<!-- FEATURED -->
 
-<section class="row-section">
-  <div class="row-header">
-    <div class="row-title">✨ New Releases</div>
-    <a class="see-all" href="https://moviebox.ph/new" target="_blank">See All →</a>
+<section id="featured">
+  <div class="featured-label reveal">Selected Works</div>
+  <div class="featured-grid reveal">
+    <div class="feat-card large">
+      <div class="feat-visual">
+        <div class="feat-glow feat-glow-1"></div>
+        <div class="feat-glow feat-glow-2"></div>
+      </div>
+      <div class="feat-info">
+        <p class="feat-cat">Brand Identity · Digital</p>
+        <h3 class="feat-name">House of Meridian — Complete Brand Universe</h3>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-visual" style="background: linear-gradient(225deg, #1a0f00, #0a0905);">
+        <div class="feat-glow" style="width:200px;height:200px;background:rgba(139,105,20,0.5);top:20px;left:20px;animation-delay:1s;"></div>
+      </div>
+      <div class="feat-info">
+        <p class="feat-cat">Art Direction</p>
+        <h3 class="feat-name">Soleil Maison — Campaign Direction</h3>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-visual" style="background: linear-gradient(45deg, #050910, #0a0905);">
+        <div class="feat-glow" style="width:180px;height:180px;background:rgba(201,168,76,0.3);bottom:10px;right:10px;animation-delay:3s;"></div>
+      </div>
+      <div class="feat-info">
+        <p class="feat-cat">Digital Experience</p>
+        <h3 class="feat-name">Kairos Ventures — Platform Design</h3>
+      </div>
+    </div>
   </div>
-  <div class="cards-scroll" id="new-row"></div>
 </section>
 
-<!-- TV SHOWS -->
+<!-- TESTIMONIALS -->
 
-<section class="row-section">
-  <div class="row-header">
-    <div class="row-title">📺 Popular TV Shows</div>
-    <a class="see-all" href="https://moviebox.ph/tv" target="_blank">See All →</a>
+<section id="testimonials">
+  <div class="test-inner">
+    <h2 class="test-header reveal">Words from those<br>who <em>trusted the process</em></h2>
+    <div class="testimonial-cards">
+      <div class="testimonial reveal">
+        <p class="testimonial-text">Working with Aurum was the single most transformative decision we made in our brand's first decade. They didn't just design our identity — they showed us who we truly were.</p>
+        <p class="testimonial-author">Céline Marchand</p>
+        <p class="testimonial-role">Founder, Maison Lumière</p>
+      </div>
+      <div class="testimonial reveal">
+        <p class="testimonial-text">There is a category of studio that operates above the industry standard, and then there is Aurum. Their work is not creative service — it is creative authority.</p>
+        <p class="testimonial-author">James Whitfield</p>
+        <p class="testimonial-role">Chief Creative Officer, Alderton Group</p>
+      </div>
+      <div class="testimonial reveal">
+        <p class="testimonial-text">Our new digital presence increased qualified inquiries by 340% within sixty days. The investment in Aurum is the most measurable decision we've ever made.</p>
+        <p class="testimonial-author">Dr. Amara Osei</p>
+        <p class="testimonial-role">Director, Sovereign Capital Partners</p>
+      </div>
+    </div>
   </div>
-  <div class="cards-scroll" id="tv-row"></div>
 </section>
 
-<!-- CONTINUE WATCHING (WIDE) -->
+<!-- CTA -->
 
-<section class="row-section">
-  <div class="row-header">
-    <div class="row-title">⏯ Continue Watching</div>
+<section id="cta">
+  <div class="cta-bg-lines"></div>
+  <div class="cta-glow"></div>
+  <div class="cta-inner">
+    <h2 class="cta-title reveal">Ready to<br>Build <em>Something</em><br>Extraordinary?</h2>
+    <p class="cta-sub reveal">We accept a limited number of new engagements each quarter.<br>Reserve your consultation before the window closes.</p>
+    <div class="cta-actions reveal">
+      <a href="#" class="btn-primary">Request a Consultation</a>
+      <a href="#" class="btn-ghost">View Our Process</a>
+    </div>
   </div>
-  <div class="cards-scroll" id="continue-row"></div>
 </section>
 
 <!-- FOOTER -->
 
 <footer>
-  <div class="footer-logo">MOVIEBOX</div>
-  <ul class="footer-links">
-    <li><a href="https://moviebox.ph" target="_blank">Home</a></li>
-    <li><a href="https://moviebox.ph/movie" target="_blank">Movies</a></li>
-    <li><a href="https://moviebox.ph/tv" target="_blank">TV Shows</a></li>
-    <li><a href="https://moviebox.ph/top" target="_blank">Top Rated</a></li>
-    <li><a href="https://moviebox.ph/new" target="_blank">New Releases</a></li>
-    <li><a href="https://moviebox.ph" target="_blank">About</a></li>
-  </ul>
-  <p class="footer-copy">© 2024 MovieBox — Watch Movies & TV Shows Free Online. All content links to moviebox.ph.</p>
-</footer>
-
-<!-- MODAL -->
-
-<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
-  <div class="modal">
-    <div class="modal-hero">
-      <img id="modal-img" src="" alt="" />
-      <button class="modal-close" onclick="closeModal()">✕</button>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">Aurum</div>
+      <p class="footer-tagline">A bespoke creative studio for those who refuse to compromise on the extraordinary.</p>
     </div>
-    <div class="modal-body">
-      <h2 class="modal-title" id="modal-title"></h2>
-      <div class="modal-meta" id="modal-meta"></div>
-      <p class="modal-desc" id="modal-desc"></p>
-      <div class="modal-actions">
-        <a class="btn-play" id="modal-play" href="#" target="_blank">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M8 5v14l11-7z"/></svg>
-          Watch Now
-        </a>
-        <button class="btn-info" onclick="closeModal()">✕ Close</button>
-      </div>
+    <div>
+      <p class="footer-col-title">Studio</p>
+      <ul class="footer-links">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Our Process</a></li>
+        <li><a href="#">Studio Philosophy</a></li>
+        <li><a href="#">Careers</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Services</p>
+      <ul class="footer-links">
+        <li><a href="#">Brand Identity</a></li>
+        <li><a href="#">Digital Experience</a></li>
+        <li><a href="#">Creative Direction</a></li>
+        <li><a href="#">Art Direction</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Connect</p>
+      <ul class="footer-links">
+        <li><a href="#">Inquiries</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">LinkedIn</a></li>
+      </ul>
     </div>
   </div>
-</div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© MMXXVI Aurum Studio. All rights reserved.</p>
+    <div class="footer-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookie Settings</a>
+    </div>
+  </div>
+</footer>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────────────────
-const movies = {
-  trending: [
-    {t:'Dune: Part Two',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',d:'Paul Atreides unites with Chani and the Fremen while on a path of revenge.'},
-    {t:'Oppenheimer',y:2023,r:'8.3',g:'Drama',p:'https://image.tmdb.org/t/p/w342/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',d:'The story of J. Robert Oppenheimer and the development of the atomic bomb.'},
-    {t:'Poor Things',y:2023,r:'8.0',g:'Fantasy',p:'https://image.tmdb.org/t/p/w342/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg',d:'A young woman brought back to life and her amazing adventures.'},
-    {t:'Godzilla x Kong',y:2024,r:'7.0',g:'Action',p:'https://image.tmdb.org/t/p/w342/z1p34vh7dEOnLDmyCrlUVLuoDzd.jpg',d:'The epic battle continues as Godzilla and Kong collide with new threats.'},
-    {t:'Civil War',y:2024,r:'7.5',g:'Thriller',p:'https://image.tmdb.org/t/p/w342/sh7Rg8Er3tFcN9BpKIPOMvALgZd.jpg',d:'A journey across a dystopian future America, balancing on the brink of collapse.'},
-    {t:'Anatomy of a Fall',y:2023,r:'7.7',g:'Drama',p:'https://image.tmdb.org/t/p/w342/kQs6keheMwCxJxrzV83VUwFtHkB.jpg',d:'A woman is suspected of murdering her husband in a remote French village.'},
-    {t:'The Zone of Interest',y:2023,r:'7.3',g:'War',p:'https://image.tmdb.org/t/p/w342/hUu9zyZmKuTWnEKz9hHMcYBGKDo.jpg',d:'The commandant of Auschwitz and his wife build their dream life next to the camp.'},
-    {t:'Wonka',y:2023,r:'7.0',g:'Fantasy',p:'https://image.tmdb.org/t/p/w342/qhb1qOilapbapxWQn9jtRCMwLJV.jpg',d:'The story of how Willy Wonka came to open the world\'s most famous candy store.'},
-  ],
-  top10: [
-    {t:'Interstellar',y:2014,r:'8.7',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',d:'A team of explorers travel through a wormhole in space in search of a new home.'},
-    {t:'The Dark Knight',y:2008,r:'9.0',g:'Action',p:'https://image.tmdb.org/t/p/w342/qJ2tW6WMUDux911r6m7haRef0WH.jpg',d:'Batman faces the Joker in a battle for the soul of Gotham.'},
-    {t:'Inception',y:2010,r:'8.8',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg',d:'A thief who steals corporate secrets through dream-sharing technology.'},
-    {t:'Parasite',y:2019,r:'8.5',g:'Drama',p:'https://image.tmdb.org/t/p/w342/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg',d:'Greed and class discrimination threaten the newly formed bond between families.'},
-    {t:'The Godfather',y:1972,r:'9.2',g:'Crime',p:'https://image.tmdb.org/t/p/w342/3bhkrj58Vtu7enYsLeLTkm3go4.jpg',d:'The aging patriarch of an organized crime dynasty transfers control to his son.'},
-    {t:'Pulp Fiction',y:1994,r:'8.9',g:'Crime',p:'https://image.tmdb.org/t/p/w342/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg',d:'The lives of two mob hitmen, a boxer, and other criminals intertwine.'},
-    {t:'Schindler\'s List',y:1993,r:'9.0',g:'Drama',p:'https://image.tmdb.org/t/p/w342/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg',d:'The true story of Oskar Schindler who saved over a thousand Jewish refugees.'},
-    {t:'Fight Club',y:1999,r:'8.8',g:'Thriller',p:'https://image.tmdb.org/t/p/w342/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg',d:'An insomniac office worker forms an underground fight club with a soap maker.'},
-  ],
-  newReleases: [
-    {t:'Inside Out 2',y:2024,r:'7.8',g:'Animation',p:'https://image.tmdb.org/t/p/w342/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg',d:'Riley enters adolescence as new emotions enter her mind headquarters.'},
-    {t:'Kingdom of the Planet of the Apes',y:2024,r:'7.1',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/gKkl37BQuKTanygYQo1HvwA4fmv.jpg',d:'Many generations after Caesar, a young ape goes on a journey.'},
-    {t:'Furiosa',y:2024,r:'7.8',g:'Action',p:'https://image.tmdb.org/t/p/w342/iADOJ8Zymm2hvF3z5marKAHNCrJ.jpg',d:'The origin story of renegade warrior Furiosa in a post-apocalyptic world.'},
-    {t:'Hit Man',y:2024,r:'7.7',g:'Comedy',p:'https://image.tmdb.org/t/p/w342/1126gjZ4iBgKhqMsEKWx93LPkqQ.jpg',d:'A mild-mannered professor moonlights as a fake hit man for the police.'},
-    {t:'Alien: Romulus',y:2024,r:'7.3',g:'Horror',p:'https://image.tmdb.org/t/p/w342/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg',d:'Young colonizers face the most terrifying life form in the universe.'},
-    {t:'Deadpool & Wolverine',y:2024,r:'7.9',g:'Action',p:'https://image.tmdb.org/t/p/w342/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',d:'Deadpool is recruited by the Time Variance Authority alongside a reluctant Wolverine.'},
-    {t:'A Quiet Place: Day One',y:2024,r:'7.1',g:'Horror',p:'https://image.tmdb.org/t/p/w342/yrpPYKijwdMHyTGIOd1iK1h0Wo6.jpg',d:'New York City is invaded by creatures that hunt by sound.'},
-    {t:'Twisters',y:2024,r:'7.2',g:'Action',p:'https://image.tmdb.org/t/p/w342/kluKSdBBQzjC6gPQhroGwMGkEHC.jpg',d:'Storm chasers pursue tornadoes in Oklahoma using experimental methods.'},
-  ],
-  tv: [
-    {t:'The Bear',y:2024,r:'8.7',g:'Drama',p:'https://image.tmdb.org/t/p/w342/sHFlbKS3WLqMnp9t2ghADIJFnuQ.jpg',d:'A young chef from the fine dining world returns home to run the family sandwich shop.'},
-    {t:'Shogun',y:2024,r:'9.0',g:'Drama',p:'https://image.tmdb.org/t/p/w342/7O4iVfOMQmdCSxhOg1WnzG1AgYT.jpg',d:'A shipwrecked English navigator becomes the first foreign samurai in feudal Japan.'},
-    {t:'House of the Dragon',y:2024,r:'8.4',g:'Fantasy',p:'https://image.tmdb.org/t/p/w342/t9XkeE7HzOsdQcDDDapDYh8Rrmt.jpg',d:'The prequel to Game of Thrones follows the Targaryen civil war.'},
-    {t:'The Last of Us',y:2023,r:'8.8',g:'Drama',p:'https://image.tmdb.org/t/p/w342/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',d:'A smuggler takes a teenage girl across a post-apocalyptic America.'},
-    {t:'Fallout',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/AnsSKR2TQlFLNiKDeaHdvBUOD8A.jpg',d:'A young woman emerges from her vault into the radiation-ravaged wasteland.'},
-    {t:'True Detective S4',y:2024,r:'7.6',g:'Crime',p:'https://image.tmdb.org/t/p/w342/z2yahl2uefxDCl0nogcRBstwruJ.jpg',d:'When a research station goes dark during polar night, two detectives must confront secrets.'},
-    {t:'3 Body Problem',y:2024,r:'7.4',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w342/oGD2kUCIlBXMHPMDYPPHgU1i93l.jpg',d:'A fateful decision made in 1960s China echoes across space and time to a group of scientists.'},
-    {t:'The Penguin',y:2024,r:'8.5',g:'Crime',p:'https://image.tmdb.org/t/p/w342/e0PVhtmGN7JBvPAv9n2BxOj6OZE.jpg',d:'Oz Cobb rises to power through Gotham\'s criminal underworld.'},
-  ],
-  continueWatching: [
-    {t:'Oppenheimer',y:2023,r:'8.3',g:'Drama',p:'https://image.tmdb.org/t/p/w780/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',prog:65,wide:true,d:'The story of J. Robert Oppenheimer, the father of the atomic bomb.'},
-    {t:'The Bear S3',y:2024,r:'8.7',g:'Drama',p:'https://image.tmdb.org/t/p/w780/sHFlbKS3WLqMnp9t2ghADIJFnuQ.jpg',prog:30,wide:true,d:'A young chef from fine dining returns home.'},
-    {t:'Dune: Part Two',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w780/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',prog:80,wide:true,d:'Paul Atreides unites with Chani and the Fremen.'},
-    {t:'Shogun',y:2024,r:'9.0',g:'Drama',p:'https://image.tmdb.org/t/p/w780/7O4iVfOMQmdCSxhOg1WnzG1AgYT.jpg',prog:45,wide:true,d:'A shipwrecked navigator becomes the first foreign samurai.'},
-    {t:'Fallout',y:2024,r:'8.5',g:'Sci-Fi',p:'https://image.tmdb.org/t/p/w780/AnsSKR2TQlFLNiKDeaHdvBUOD8A.jpg',prog:20,wide:true,d:'A young woman emerges into the radiation-ravaged wasteland.'},
-  ]
-};
+// ─── CURSOR ───────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animateCursor() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+document.querySelectorAll('a, button, .service-card').forEach(el => {
+  el.addEventListener('mouseenter', () => ring.classList.add('hovered'));
+  el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
+});
 
-// slug helper
-function slug(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// ─── THREE.JS PARTICLE FIELD ──────────────────────────────
+const canvas = document.getElementById('hero-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 80;
+
+// Particle system
+const particleCount = 1800;
+const positions = new Float32Array(particleCount * 3);
+const sizes = new Float32Array(particleCount);
+const opacities = new Float32Array(particleCount);
+const speeds = new Float32Array(particleCount);
+
+for (let i = 0; i < particleCount; i++) {
+  positions[i * 3]     = (Math.random() - 0.5) * 200;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+  sizes[i] = Math.random() * 1.5 + 0.3;
+  opacities[i] = Math.random() * 0.6 + 0.1;
+  speeds[i] = Math.random() * 0.3 + 0.05;
 }
 
-function movieUrl(title, isTV) {
-  const s = slug(title);
-  return isTV
-    ? `https://moviebox.ph/watch-tv-series/${s}`
-    : `https://moviebox.ph/watch-movie/${s}`;
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+// Circular texture
+const texCanvas = document.createElement('canvas');
+texCanvas.width = 32; texCanvas.height = 32;
+const ctx = texCanvas.getContext('2d');
+const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+grad.addColorStop(0, 'rgba(201,168,76,1)');
+grad.addColorStop(0.5, 'rgba(201,168,76,0.4)');
+grad.addColorStop(1, 'rgba(201,168,76,0)');
+ctx.fillStyle = grad;
+ctx.fillRect(0, 0, 32, 32);
+const texture = new THREE.CanvasTexture(texCanvas);
+
+const mat = new THREE.PointsMaterial({
+  size: 0.8,
+  map: texture,
+  transparent: true,
+  opacity: 0.5,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  color: new THREE.Color('#c9a84c')
+});
+
+const particles = new THREE.Points(geo, mat);
+scene.add(particles);
+
+// Connection lines (sparse)
+const lineGeo = new THREE.BufferGeometry();
+const linePositions = [];
+for (let i = 0; i < 60; i++) {
+  const ax = (Math.random() - 0.5) * 200;
+  const ay = (Math.random() - 0.5) * 200;
+  const az = (Math.random() - 0.5) * 40;
+  const bx = ax + (Math.random() - 0.5) * 40;
+  const by = ay + (Math.random() - 0.5) * 40;
+  const bz = az + (Math.random() - 0.5) * 10;
+  linePositions.push(ax, ay, az, bx, by, bz);
 }
+lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+const lineMat = new THREE.LineBasicMaterial({ color: 0xc9a84c, transparent: true, opacity: 0.06 });
+const lines = new THREE.LineSegments(lineGeo, lineMat);
+scene.add(lines);
 
-// ── RENDER CARD ────────────────────────────────────────────────────────────────
-function buildCard(m, rank, isTV, wide, continueData) {
-  const url = movieUrl(m.t, isTV);
-  const card = document.createElement('a');
-  card.href = url;
-  card.target = '_blank';
-  card.className = 'card' + (rank ? ' card-top' : '') + (wide ? ' card-wide' : '');
-  card.rel = 'noopener';
+// Mouse parallax
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
 
-  const playPath = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-
-  let progressHTML = '';
-  if (continueData) {
-    progressHTML = `<div class="progress-bar"><div class="progress-fill" style="width:${continueData.prog}%"></div></div>`;
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.003;
+  
+  // Float particles
+  const pos = particles.geometry.attributes.position.array;
+  for (let i = 0; i < particleCount; i++) {
+    pos[i * 3 + 1] += speeds[i] * 0.04;
+    if (pos[i * 3 + 1] > 100) pos[i * 3 + 1] = -100;
+    pos[i * 3] += Math.sin(t + i * 0.01) * 0.01;
   }
-
-  card.innerHTML = `
-    <img class="card-poster" src="${m.p}" alt="${m.t}" loading="lazy" onerror="this.src='https://via.placeholder.com/342x513/1f1f1f/555?text=No+Image'" />
-    ${rank ? `<div class="card-rank">${rank}</div>` : ''}
-    ${progressHTML}
-    <div class="card-overlay">
-      <button class="card-play-btn" onclick="event.preventDefault();event.stopPropagation();">
-        ${playPath}
-      </button>
-      <div class="card-info">
-        <div class="card-name">${m.t}</div>
-        <div class="card-meta">
-          <span class="imdb">★ ${m.r}</span>
-          <span class="dot">•</span>
-          <span>${m.y}</span>
-          <span class="dot">•</span>
-          <span>${m.g}</span>
-        </div>
-      </div>
-    </div>
-    <div class="card-footer">
-      <div class="card-footer-name">${m.t}</div>
-      <div class="card-footer-year">${m.y} • ${m.g}</div>
-    </div>
-  `;
-
-  // Play btn links to moviebox
-  card.querySelector('.card-play-btn').addEventListener('click', (e) => {
-    e.preventDefault(); e.stopPropagation();
-    window.open(url, '_blank');
-  });
-
-  // Long press / right click opens modal
-  card.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    openModal(m.t, m.y, '', m.r, m.g, m.p, m.d, url);
-  });
-
-  return card;
+  particles.geometry.attributes.position.needsUpdate = true;
+  
+  // Slow drift
+  particles.rotation.y = t * 0.06 + mouseX * 0.1;
+  particles.rotation.x = mouseY * 0.05;
+  lines.rotation.y = t * 0.04;
+  
+  camera.position.x += (mouseX * 5 - camera.position.x) * 0.03;
+  camera.position.y += (-mouseY * 3 - camera.position.y) * 0.03;
+  
+  renderer.render(scene, camera);
 }
+animate();
 
-function populateRow(id, data, opts = {}) {
-  const row = document.getElementById(id);
-  data.forEach((m, i) => {
-    row.appendChild(buildCard(m, opts.ranked ? i + 1 : null, opts.tv, opts.wide, opts.cont ? m : null));
-  });
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── SCROLL REVEAL ─────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ─── COUNTER ANIMATION ────────────────────────────────────
+function animateCounter(el, target, suffix='') {
+  let start = 0;
+  const step = target / 60;
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= target) { start = target; clearInterval(timer); }
+    el.textContent = Math.floor(start) + suffix;
+  }, 16);
 }
+const countObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const nums = e.target.querySelectorAll('.stat-number');
+      const values = [340, 18, 97, 11];
+      const suffixes = ['+', '', '%', ''];
+      nums.forEach((n, i) => animateCounter(n, values[i], suffixes[i]));
+      countObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.4 });
+const statGrid = document.querySelector('.stat-grid');
+if (statGrid) countObserver.observe(statGrid);
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-populateRow('trending-row', movies.trending);
-populateRow('top10-row', movies.top10, { ranked: true });
-populateRow('new-row', movies.newReleases);
-populateRow('tv-row', movies.tv, { tv: true });
-populateRow('continue-row', movies.continueWatching, { wide: true, cont: true });
-
-// ── NAVBAR SCROLL ─────────────────────────────────────────────────────────────
+// ─── NAV SCROLL EFFECT ────────────────────────────────────
+const nav = document.querySelector('nav');
 window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
-});
-
-// ── GENRE PILLS ───────────────────────────────────────────────────────────────
-function setGenre(el) {
-  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  const genre = el.textContent;
-  const url = genre === 'All'
-    ? 'https://moviebox.ph'
-    : `https://moviebox.ph/genre/${slug(genre)}`;
-  window.open(url, '_blank');
-}
-
-// ── MODAL ─────────────────────────────────────────────────────────────────────
-function openModal(title, year, runtime, rating, genre, poster, desc, url) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-img').src = poster;
-  document.getElementById('modal-img').alt = title;
-  document.getElementById('modal-desc').textContent = desc;
-  document.getElementById('modal-play').href = url || 'https://moviebox.ph';
-  document.getElementById('modal-meta').innerHTML = `
-    <span class="rating">★ ${rating}</span>
-    <span>${year}</span>
-    ${runtime ? `<span>•</span><span>${runtime}</span>` : ''}
-    <span>•</span><span>${genre}</span>
-    <span class="hd">HD</span>
-    <span class="hd">FREE</span>
-  `;
-  document.getElementById('modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-}
-
-// ── SEARCH ────────────────────────────────────────────────────────────────────
-document.getElementById('searchInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    const q = e.target.value.trim();
-    if (q) window.open(`https://moviebox.ph/search?keyword=${encodeURIComponent(q)}`, '_blank');
+  if (window.scrollY > 60) {
+    nav.style.background = 'rgba(10,9,5,0.96)';
+    nav.style.borderBottom = '1px solid rgba(201,168,76,0.1)';
+  } else {
+    nav.style.background = 'linear-gradient(to bottom, rgba(10,9,5,0.9) 0%, transparent 100%)';
+    nav.style.borderBottom = 'none';
   }
-});
-
-// ── KEYBOARD ─────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeModal();
 });
 </script>
 
