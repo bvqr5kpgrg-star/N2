@@ -1,1243 +1,257 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AURUM — Luxury Redefined</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreamify Store</title>
+
 <style>
-:root {
-  --gold: #c9a84c;
-  --gold-light: #e8d08a;
-  --gold-dark: #8b6914;
-  --cream: #f5f0e8;
-  --dark: #0a0905;
-  --mid: #1a1710;
-  --text: #d4c9b0;
-  --text-muted: #7a7160;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+header{
+  padding:25px;
+  text-align:center;
+  background:linear-gradient(135deg,#07111f,#13243a);
+}
+h1{color:#d8b46a}
+.container{max-width:1200px;margin:auto;padding:20px}
+.top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+input,select,button{
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #333;
+}
+input,select{
+  background:#111827;
+  color:white;
+}
+button{
+  background:#d8b46a;
+  color:#07111f;
+  font-weight:bold;
+  cursor:pointer;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:18px;
+}
+.card{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:20px;
+  overflow:hidden;
+}
+.image-box{
+  height:240px;
+  background:#111827;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.image-box img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.emoji{font-size:60px}
+.info{padding:15px}
+.badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  background:#d8b46a;
+  color:#07111f;
+  font-size:12px;
+  font-weight:bold;
+}
+.price{
+  color:#d8b46a;
+  font-size:20px;
+  font-weight:bold;
+}
+.old{
+  color:#aaa;
+  text-decoration:line-through;
+  margin-left:8px;
+}
+.cart{
+  position:fixed;
+  right:15px;
+  bottom:15px;
+  background:#d8b46a;
+  color:#07111f;
+  padding:15px 20px;
+  border-radius:50px;
+  font-weight:bold;
 }
-
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-html { scroll-behavior: smooth; }
-
-body {
-background: var(–dark);
-color: var(–text);
-font-family: ‘Montserrat’, sans-serif;
-font-weight: 300;
-overflow-x: hidden;
-cursor: none;
-}
-
-/* CUSTOM CURSOR */
-.cursor {
-position: fixed;
-width: 8px; height: 8px;
-background: var(–gold);
-border-radius: 50%;
-pointer-events: none;
-z-index: 9999;
-transform: translate(-50%, -50%);
-transition: transform 0.1s ease;
-}
-.cursor-ring {
-position: fixed;
-width: 36px; height: 36px;
-border: 1px solid rgba(201,168,76,0.5);
-border-radius: 50%;
-pointer-events: none;
-z-index: 9998;
-transform: translate(-50%, -50%);
-transition: all 0.15s ease;
-}
-.cursor-ring.hovered {
-width: 60px; height: 60px;
-border-color: var(–gold);
-background: rgba(201,168,76,0.05);
-}
-
-/* CANVAS */
-#hero-canvas {
-position: fixed;
-top: 0; left: 0;
-width: 100vw; height: 100vh;
-z-index: 0;
-pointer-events: none;
-}
-
-/* NAV */
-nav {
-position: fixed;
-top: 0; left: 0; right: 0;
-z-index: 100;
-padding: 28px 60px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-mix-blend-mode: normal;
-background: linear-gradient(to bottom, rgba(10,9,5,0.9) 0%, transparent 100%);
-}
-.nav-logo {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 1.6rem;
-font-weight: 300;
-letter-spacing: 0.4em;
-color: var(–gold-light);
-text-transform: uppercase;
-}
-.nav-links {
-display: flex;
-gap: 48px;
-list-style: none;
-}
-.nav-links a {
-color: var(–text-muted);
-text-decoration: none;
-font-size: 0.65rem;
-letter-spacing: 0.25em;
-text-transform: uppercase;
-transition: color 0.3s;
-}
-.nav-links a:hover { color: var(–gold); }
-.nav-cta {
-font-size: 0.65rem;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–dark);
-background: var(–gold);
-padding: 10px 28px;
-text-decoration: none;
-transition: background 0.3s;
-}
-.nav-cta:hover { background: var(–gold-light); }
-
-/* HERO */
-#hero {
-position: relative;
-height: 100vh;
-display: flex;
-align-items: center;
-justify-content: center;
-z-index: 1;
-}
-.hero-content {
-text-align: center;
-position: relative;
-z-index: 2;
-}
-.hero-eyebrow {
-font-size: 0.6rem;
-letter-spacing: 0.5em;
-text-transform: uppercase;
-color: var(–gold);
-margin-bottom: 28px;
-opacity: 0;
-animation: fadeUp 1s ease 0.5s forwards;
-}
-.hero-title {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: clamp(4rem, 10vw, 9rem);
-font-weight: 300;
-line-height: 0.9;
-letter-spacing: -0.02em;
-color: var(–cream);
-margin-bottom: 32px;
-opacity: 0;
-animation: fadeUp 1.2s ease 0.8s forwards;
-}
-.hero-title em {
-font-style: italic;
-color: var(–gold-light);
-}
-.hero-sub {
-font-size: 0.75rem;
-letter-spacing: 0.18em;
-color: var(–text-muted);
-max-width: 420px;
-margin: 0 auto 52px;
-line-height: 2;
-opacity: 0;
-animation: fadeUp 1s ease 1.1s forwards;
-}
-.hero-actions {
-display: flex;
-gap: 20px;
-justify-content: center;
-align-items: center;
-opacity: 0;
-animation: fadeUp 1s ease 1.4s forwards;
-}
-.btn-primary {
-display: inline-block;
-padding: 16px 48px;
-background: var(–gold);
-color: var(–dark);
-text-decoration: none;
-font-size: 0.65rem;
-letter-spacing: 0.25em;
-text-transform: uppercase;
-font-weight: 500;
-transition: all 0.3s ease;
-position: relative;
-overflow: hidden;
-}
-.btn-primary::before {
-content: ‘’;
-position: absolute;
-top: 0; left: -100%;
-width: 100%; height: 100%;
-background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-transition: left 0.5s ease;
-}
-.btn-primary:hover::before { left: 100%; }
-.btn-primary:hover { background: var(–gold-light); transform: translateY(-2px); }
-.btn-ghost {
-display: inline-block;
-padding: 16px 48px;
-border: 1px solid rgba(201,168,76,0.4);
-color: var(–gold);
-text-decoration: none;
-font-size: 0.65rem;
-letter-spacing: 0.25em;
-text-transform: uppercase;
-transition: all 0.3s ease;
-}
-.btn-ghost:hover {
-border-color: var(–gold);
-background: rgba(201,168,76,0.08);
-}
-.scroll-indicator {
-position: absolute;
-bottom: 48px;
-left: 50%;
-transform: translateX(-50%);
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 12px;
-opacity: 0;
-animation: fadeIn 1s ease 2s forwards;
-}
-.scroll-line {
-width: 1px;
-height: 60px;
-background: linear-gradient(to bottom, var(–gold), transparent);
-animation: scrollPulse 2s ease infinite;
-}
-.scroll-text {
-font-size: 0.55rem;
-letter-spacing: 0.3em;
-text-transform: uppercase;
-color: var(–text-muted);
-}
-
-/* MARQUEE STRIP */
-.marquee-strip {
-position: relative;
-z-index: 2;
-background: var(–gold);
-padding: 14px 0;
-overflow: hidden;
-white-space: nowrap;
-}
-.marquee-track {
-display: inline-flex;
-animation: marquee 20s linear infinite;
-}
-.marquee-item {
-font-size: 0.6rem;
-letter-spacing: 0.3em;
-text-transform: uppercase;
-color: var(–dark);
-font-weight: 500;
-padding: 0 48px;
-}
-.marquee-dot {
-color: rgba(10,9,5,0.4);
-font-size: 0.5rem;
-}
-
-/* SECTIONS */
-section {
-position: relative;
-z-index: 2;
-}
-
-/* PHILOSOPHY */
-#philosophy {
-padding: 160px 60px;
-max-width: 1400px;
-margin: 0 auto;
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 120px;
-align-items: center;
-}
-.section-tag {
-font-size: 0.55rem;
-letter-spacing: 0.4em;
-text-transform: uppercase;
-color: var(–gold);
-margin-bottom: 24px;
-display: flex;
-align-items: center;
-gap: 16px;
-}
-.section-tag::before {
-content: ‘’;
-width: 32px; height: 1px;
-background: var(–gold);
-}
-.philosophy-title {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: clamp(2.5rem, 4vw, 4.5rem);
-font-weight: 300;
-line-height: 1.1;
-color: var(–cream);
-margin-bottom: 32px;
-}
-.philosophy-title em {
-font-style: italic;
-color: var(–gold-light);
-}
-.philosophy-text {
-font-size: 0.8rem;
-line-height: 2.4;
-color: var(–text-muted);
-margin-bottom: 40px;
-}
-.stat-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 32px;
-}
-.stat-item {
-border-top: 1px solid rgba(201,168,76,0.2);
-padding-top: 20px;
-}
-.stat-number {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 3rem;
-font-weight: 300;
-color: var(–gold);
-line-height: 1;
-}
-.stat-label {
-font-size: 0.6rem;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–text-muted);
-margin-top: 6px;
-}
-.philosophy-visual {
-position: relative;
-height: 560px;
-}
-.geo-frame {
-position: absolute;
-inset: 0;
-border: 1px solid rgba(201,168,76,0.15);
-}
-.geo-inner {
-position: absolute;
-top: 24px; left: 24px; right: 24px; bottom: 24px;
-border: 1px solid rgba(201,168,76,0.08);
-background: linear-gradient(135deg, rgba(201,168,76,0.04) 0%, transparent 60%);
-}
-.geo-accent {
-position: absolute;
-top: -1px; right: 60px;
-width: 80px; height: 1px;
-background: var(–gold);
-}
-.geo-accent-v {
-position: absolute;
-bottom: 60px; right: -1px;
-width: 1px; height: 80px;
-background: var(–gold);
-}
-.geo-orb {
-position: absolute;
-top: 50%; left: 50%;
-transform: translate(-50%, -50%);
-width: 260px; height: 260px;
-border-radius: 50%;
-background: radial-gradient(circle at 35% 35%, rgba(201,168,76,0.2), rgba(201,168,76,0.02) 60%, transparent);
-border: 1px solid rgba(201,168,76,0.15);
-animation: orbPulse 4s ease-in-out infinite;
-}
-.geo-ring {
-position: absolute;
-top: 50%; left: 50%;
-transform: translate(-50%, -50%);
-width: 360px; height: 360px;
-border-radius: 50%;
-border: 1px solid rgba(201,168,76,0.06);
-animation: orbPulse 4s ease-in-out infinite 1s;
-}
-.geo-cross-h {
-position: absolute;
-top: 50%; left: 50%;
-transform: translate(-50%, -50%);
-width: 200px; height: 1px;
-background: linear-gradient(to right, transparent, rgba(201,168,76,0.3), transparent);
-}
-.geo-cross-v {
-position: absolute;
-top: 50%; left: 50%;
-transform: translate(-50%, -50%);
-width: 1px; height: 200px;
-background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.3), transparent);
-}
-.geo-label {
-position: absolute;
-bottom: 40px;
-left: 40px;
-font-size: 0.55rem;
-letter-spacing: 0.3em;
-text-transform: uppercase;
-color: var(–text-muted);
-}
-
-/* SERVICES */
-#services {
-padding: 120px 60px;
-background: var(–mid);
-}
-.services-inner {
-max-width: 1400px;
-margin: 0 auto;
-}
-.services-header {
-display: flex;
-justify-content: space-between;
-align-items: flex-end;
-margin-bottom: 80px;
-}
-.services-title {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: clamp(2rem, 4vw, 4rem);
-font-weight: 300;
-color: var(–cream);
-}
-.services-title em { font-style: italic; color: var(–gold-light); }
-.services-desc {
-max-width: 320px;
-font-size: 0.75rem;
-line-height: 2;
-color: var(–text-muted);
-}
-.services-grid {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 2px;
-}
-.service-card {
-padding: 52px 40px;
-border: 1px solid rgba(201,168,76,0.08);
-background: rgba(10,9,5,0.6);
-position: relative;
-overflow: hidden;
-transition: all 0.4s ease;
-cursor: default;
-}
-.service-card::before {
-content: ‘’;
-position: absolute;
-top: 0; left: 0;
-width: 100%; height: 3px;
-background: linear-gradient(to right, var(–gold-dark), var(–gold));
-transform: scaleX(0);
-transform-origin: left;
-transition: transform 0.4s ease;
-}
-.service-card:hover::before { transform: scaleX(1); }
-.service-card:hover { background: rgba(201,168,76,0.03); transform: translateY(-4px); }
-.service-num {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 3.5rem;
-font-weight: 300;
-color: rgba(201,168,76,0.12);
-line-height: 1;
-margin-bottom: 32px;
-transition: color 0.4s;
-}
-.service-card:hover .service-num { color: rgba(201,168,76,0.25); }
-.service-name {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 1.6rem;
-font-weight: 400;
-color: var(–cream);
-margin-bottom: 16px;
-}
-.service-text {
-font-size: 0.72rem;
-line-height: 2.2;
-color: var(–text-muted);
-margin-bottom: 32px;
-}
-.service-link {
-font-size: 0.6rem;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–gold);
-text-decoration: none;
-display: flex;
-align-items: center;
-gap: 12px;
-}
-.service-link::after {
-content: ‘→’;
-transition: transform 0.3s;
-}
-.service-card:hover .service-link::after { transform: translateX(6px); }
-
-/* FEATURED */
-#featured {
-padding: 160px 60px;
-max-width: 1400px;
-margin: 0 auto;
-}
-.featured-label {
-font-size: 0.55rem;
-letter-spacing: 0.4em;
-text-transform: uppercase;
-color: var(–gold);
-margin-bottom: 60px;
-display: flex;
-align-items: center;
-gap: 16px;
-}
-.featured-label::before {
-content: ‘’;
-width: 32px; height: 1px;
-background: var(–gold);
-}
-.featured-grid {
-display: grid;
-grid-template-columns: 1.4fr 1fr;
-grid-template-rows: auto auto;
-gap: 24px;
-}
-.feat-card {
-position: relative;
-overflow: hidden;
-background: var(–mid);
-border: 1px solid rgba(201,168,76,0.08);
-}
-.feat-card.large { grid-row: 1/3; }
-.feat-visual {
-height: 100%;
-min-height: 300px;
-background: linear-gradient(135deg, var(–mid), var(–dark));
-position: relative;
-overflow: hidden;
-}
-.feat-card.large .feat-visual { min-height: 600px; }
-.feat-glow {
-position: absolute;
-border-radius: 50%;
-filter: blur(80px);
-opacity: 0.3;
-animation: glowPulse 5s ease-in-out infinite;
-}
-.feat-glow-1 {
-width: 300px; height: 300px;
-background: var(–gold-dark);
-top: -50px; right: -50px;
-}
-.feat-glow-2 {
-width: 200px; height: 200px;
-background: rgba(201,168,76,0.5);
-bottom: 30px; left: 30px;
-animation-delay: 2.5s;
-}
-.feat-info {
-padding: 32px;
-border-top: 1px solid rgba(201,168,76,0.1);
-}
-.feat-cat {
-font-size: 0.55rem;
-letter-spacing: 0.3em;
-text-transform: uppercase;
-color: var(–gold);
-margin-bottom: 10px;
-}
-.feat-name {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 1.5rem;
-font-weight: 400;
-color: var(–cream);
-}
-.feat-card.large .feat-name { font-size: 2.2rem; }
-
-/* TESTIMONIALS */
-#testimonials {
-padding: 140px 60px;
-background: var(–mid);
-}
-.test-inner {
-max-width: 900px;
-margin: 0 auto;
-text-align: center;
-}
-.test-header {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: clamp(1.8rem, 3vw, 3rem);
-font-weight: 300;
-color: var(–cream);
-margin-bottom: 80px;
-}
-.test-header em { font-style: italic; color: var(–gold-light); }
-.testimonial-cards {
-display: flex;
-flex-direction: column;
-gap: 48px;
-}
-.testimonial {
-padding: 48px;
-border: 1px solid rgba(201,168,76,0.1);
-position: relative;
-text-align: left;
-}
-.testimonial::before {
-content: ‘”’;
-position: absolute;
-top: -24px; left: 40px;
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 8rem;
-color: rgba(201,168,76,0.1);
-line-height: 1;
-}
-.testimonial-text {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 1.4rem;
-font-weight: 300;
-font-style: italic;
-line-height: 1.7;
-color: var(–cream);
-margin-bottom: 28px;
-}
-.testimonial-author {
-font-size: 0.6rem;
-letter-spacing: 0.25em;
-text-transform: uppercase;
-color: var(–gold);
-}
-.testimonial-role {
-font-size: 0.6rem;
-letter-spacing: 0.15em;
-color: var(–text-muted);
-margin-top: 4px;
-}
-
-/* CTA */
-#cta {
-padding: 160px 60px;
-text-align: center;
-position: relative;
-overflow: hidden;
-}
-.cta-bg-lines {
-position: absolute;
-inset: 0;
-background-image:
-linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
-linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
-background-size: 80px 80px;
-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-}
-.cta-glow {
-position: absolute;
-top: 50%; left: 50%;
-transform: translate(-50%, -50%);
-width: 600px; height: 600px;
-background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
-border-radius: 50%;
-}
-.cta-inner { position: relative; z-index: 2; }
-.cta-title {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: clamp(3rem, 7vw, 7rem);
-font-weight: 300;
-line-height: 1;
-color: var(–cream);
-margin-bottom: 32px;
-}
-.cta-title em { font-style: italic; color: var(–gold-light); }
-.cta-sub {
-font-size: 0.75rem;
-letter-spacing: 0.18em;
-color: var(–text-muted);
-margin-bottom: 52px;
-line-height: 2;
-}
-.cta-actions {
-display: flex;
-gap: 20px;
-justify-content: center;
-}
-
-/* FOOTER */
-footer {
-padding: 80px 60px 40px;
-border-top: 1px solid rgba(201,168,76,0.1);
-background: var(–dark);
-}
-.footer-top {
-display: grid;
-grid-template-columns: 2fr 1fr 1fr 1fr;
-gap: 80px;
-margin-bottom: 80px;
-}
-.footer-brand {
-font-family: ‘Cormorant Garamond’, serif;
-font-size: 2rem;
-font-weight: 300;
-letter-spacing: 0.3em;
-color: var(–gold-light);
-margin-bottom: 20px;
-}
-.footer-tagline {
-font-size: 0.7rem;
-line-height: 2;
-color: var(–text-muted);
-max-width: 280px;
-}
-.footer-col-title {
-font-size: 0.55rem;
-letter-spacing: 0.35em;
-text-transform: uppercase;
-color: var(–gold);
-margin-bottom: 24px;
-}
-.footer-links {
-list-style: none;
-display: flex;
-flex-direction: column;
-gap: 12px;
-}
-.footer-links a {
-color: var(–text-muted);
-text-decoration: none;
-font-size: 0.72rem;
-transition: color 0.3s;
-}
-.footer-links a:hover { color: var(–cream); }
-.footer-bottom {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding-top: 40px;
-border-top: 1px solid rgba(201,168,76,0.06);
-}
-.footer-copy {
-font-size: 0.6rem;
-letter-spacing: 0.1em;
-color: var(–text-muted);
-}
-.footer-legal {
-display: flex;
-gap: 32px;
-}
-.footer-legal a {
-font-size: 0.6rem;
-letter-spacing: 0.1em;
-color: var(–text-muted);
-text-decoration: none;
-transition: color 0.3s;
-}
-.footer-legal a:hover { color: var(–gold); }
-
-/* ANIMATIONS */
-@keyframes fadeUp {
-from { opacity: 0; transform: translateY(30px); }
-to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-from { opacity: 0; }
-to { opacity: 1; }
-}
-@keyframes scrollPulse {
-0%, 100% { opacity: 0.5; transform: scaleY(1); }
-50% { opacity: 1; transform: scaleY(1.2); }
-}
-@keyframes marquee {
-from { transform: translateX(0); }
-to { transform: translateX(-50%); }
-}
-@keyframes orbPulse {
-0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.05); }
-}
-@keyframes glowPulse {
-0%, 100% { opacity: 0.25; }
-50% { opacity: 0.45; }
-}
-
-/* SCROLL REVEAL */
-.reveal {
-opacity: 0;
-transform: translateY(40px);
-transition: opacity 0.9s ease, transform 0.9s ease;
-}
-.reveal.visible {
-opacity: 1;
-transform: translateY(0);
-}
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
 </style>
-
 </head>
+
 <body>
 
-<!-- CUSTOM CURSOR -->
+<header>
+  <h1 id="brandName">Dreamify</h1>
+  <p id="heroText">Premium boutique shopping experience</p>
+  <a href="admin.html" style="color:#d8b46a">Admin Panel</a>
+</header>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
-<!-- THREE.JS CANVAS -->
-
-<canvas id="hero-canvas"></canvas>
-
-<!-- NAV -->
-
-<nav>
-  <div class="nav-logo">Aurum</div>
-  <ul class="nav-links">
-    <li><a href="#philosophy">Philosophy</a></li>
-    <li><a href="#services">Services</a></li>
-    <li><a href="#featured">Work</a></li>
-    <li><a href="#testimonials">Stories</a></li>
-  </ul>
-  <a href="#cta" class="nav-cta">Begin</a>
-</nav>
-
-<!-- HERO -->
-
-<section id="hero">
-  <div class="hero-content">
-    <p class="hero-eyebrow">Est. MMXV · Bespoke Excellence</p>
-    <h1 class="hero-title">Where Vision<br>Meets <em>Mastery</em></h1>
-    <p class="hero-sub">We craft experiences that transcend the ordinary. Each project is an act of precision — designed to endure, created to captivate.</p>
-    <div class="hero-actions">
-      <a href="#featured" class="btn-primary">Explore Work</a>
-      <a href="#philosophy" class="btn-ghost">Our Philosophy</a>
-    </div>
+<div class="container">
+  <div class="top">
+    <input id="search" placeholder="Search product..." oninput="renderProducts()">
+    <select id="category" onchange="renderProducts()">
+      <option value="all">All Categories</option>
+      <option value="Baby">Baby</option>
+      <option value="Perfume">Perfume</option>
+      <option value="Fashion">Fashion</option>
+      <option value="Offer">Offer</option>
+    </select>
   </div>
-  <div class="scroll-indicator">
-    <div class="scroll-line"></div>
-    <span class="scroll-text">Scroll</span>
-  </div>
-</section>
 
-<!-- MARQUEE -->
-
-<div class="marquee-strip">
-  <div class="marquee-track">
-    <span class="marquee-item">Bespoke Design</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Precision Craft</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Timeless Aesthetic</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Strategic Vision</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Luxury Standards</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Global Excellence</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Bespoke Design</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Precision Craft</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Timeless Aesthetic</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Strategic Vision</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Luxury Standards</span><span class="marquee-dot">◆</span>
-    <span class="marquee-item">Global Excellence</span><span class="marquee-dot">◆</span>
-  </div>
+  <div class="grid" id="productGrid"></div>
 </div>
 
-<!-- PHILOSOPHY -->
-
-<section id="philosophy">
-  <div class="reveal">
-    <p class="section-tag">Our Philosophy</p>
-    <h2 class="philosophy-title">Beauty is not a<br>luxury — it's a<br><em>language</em></h2>
-    <p class="philosophy-text">We believe that great design is felt before it is seen. Every curve, every weight, every pause carries meaning. Our work begins where trends end — in the quiet space where intention becomes form.</p>
-    <div class="stat-grid">
-      <div class="stat-item reveal reveal-delay-1">
-        <div class="stat-number">340+</div>
-        <div class="stat-label">Projects Delivered</div>
-      </div>
-      <div class="stat-item reveal reveal-delay-2">
-        <div class="stat-number">18</div>
-        <div class="stat-label">Countries Served</div>
-      </div>
-      <div class="stat-item reveal reveal-delay-3">
-        <div class="stat-number">97%</div>
-        <div class="stat-label">Client Retention</div>
-      </div>
-      <div class="stat-item reveal reveal-delay-4">
-        <div class="stat-number">11</div>
-        <div class="stat-label">Years of Excellence</div>
-      </div>
-    </div>
-  </div>
-  <div class="philosophy-visual reveal">
-    <div class="geo-frame"></div>
-    <div class="geo-inner"></div>
-    <div class="geo-accent"></div>
-    <div class="geo-accent-v"></div>
-    <div class="geo-orb"></div>
-    <div class="geo-ring"></div>
-    <div class="geo-cross-h"></div>
-    <div class="geo-cross-v"></div>
-    <div class="geo-label">Precision at Scale</div>
-  </div>
-</section>
-
-<!-- SERVICES -->
-
-<section id="services">
-  <div class="services-inner">
-    <div class="services-header reveal">
-      <div>
-        <p class="section-tag">What We Do</p>
-        <h2 class="services-title">A Suite of<br><em>Rare Capabilities</em></h2>
-      </div>
-      <p class="services-desc">We work exclusively with founders, institutions, and brands that understand the difference between good and extraordinary.</p>
-    </div>
-    <div class="services-grid">
-      <div class="service-card reveal">
-        <div class="service-num">01</div>
-        <h3 class="service-name">Brand Identity</h3>
-        <p class="service-text">The architecture of perception. We build brands that occupy the highest tier of their category — logos, systems, and stories that endure decades.</p>
-        <a href="#" class="service-link">Explore Service</a>
-      </div>
-      <div class="service-card reveal reveal-delay-1">
-        <div class="service-num">02</div>
-        <h3 class="service-name">Digital Experience</h3>
-        <p class="service-text">Websites and platforms that convert at the speed of desire. Built with obsessive attention to motion, hierarchy, and intention.</p>
-        <a href="#" class="service-link">Explore Service</a>
-      </div>
-      <div class="service-card reveal reveal-delay-2">
-        <div class="service-num">03</div>
-        <h3 class="service-name">Creative Direction</h3>
-        <p class="service-text">Vision before execution. We sit alongside decision-makers to ensure every touchpoint speaks with singular, unmistakable clarity.</p>
-        <a href="#" class="service-link">Explore Service</a>
-      </div>
-      <div class="service-card reveal">
-        <div class="service-num">04</div>
-        <h3 class="service-name">Art Direction</h3>
-        <p class="service-text">Photography. Film. Space. We shape how your world is seen — with an eye trained on the extraordinary and a standard set by the finest.</p>
-        <a href="#" class="service-link">Explore Service</a>
-      </div>
-      <div class="service-card reveal reveal-delay-1">
-        <div class="service-num">05</div>
-        <h3 class="service-name">Strategy & Positioning</h3>
-        <p class="service-text">Intelligence applied to ambition. We identify the precise territory you should own, and build the language to claim it with authority.</p>
-        <a href="#" class="service-link">Explore Service</a>
-      </div>
-      <div class="service-card reveal reveal-delay-2">
-        <div class="service-num">06</div>
-        <h3 class="service-name">Bespoke Consulting</h3>
-        <p class="service-text">For those who require total discretion and singular focus. A private engagement, tailored entirely to your vision and timeline.</p>
-        <a href="#" class="service-link">Explore Service</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURED -->
-
-<section id="featured">
-  <div class="featured-label reveal">Selected Works</div>
-  <div class="featured-grid reveal">
-    <div class="feat-card large">
-      <div class="feat-visual">
-        <div class="feat-glow feat-glow-1"></div>
-        <div class="feat-glow feat-glow-2"></div>
-      </div>
-      <div class="feat-info">
-        <p class="feat-cat">Brand Identity · Digital</p>
-        <h3 class="feat-name">House of Meridian — Complete Brand Universe</h3>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-visual" style="background: linear-gradient(225deg, #1a0f00, #0a0905);">
-        <div class="feat-glow" style="width:200px;height:200px;background:rgba(139,105,20,0.5);top:20px;left:20px;animation-delay:1s;"></div>
-      </div>
-      <div class="feat-info">
-        <p class="feat-cat">Art Direction</p>
-        <h3 class="feat-name">Soleil Maison — Campaign Direction</h3>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-visual" style="background: linear-gradient(45deg, #050910, #0a0905);">
-        <div class="feat-glow" style="width:180px;height:180px;background:rgba(201,168,76,0.3);bottom:10px;right:10px;animation-delay:3s;"></div>
-      </div>
-      <div class="feat-info">
-        <p class="feat-cat">Digital Experience</p>
-        <h3 class="feat-name">Kairos Ventures — Platform Design</h3>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TESTIMONIALS -->
-
-<section id="testimonials">
-  <div class="test-inner">
-    <h2 class="test-header reveal">Words from those<br>who <em>trusted the process</em></h2>
-    <div class="testimonial-cards">
-      <div class="testimonial reveal">
-        <p class="testimonial-text">Working with Aurum was the single most transformative decision we made in our brand's first decade. They didn't just design our identity — they showed us who we truly were.</p>
-        <p class="testimonial-author">Céline Marchand</p>
-        <p class="testimonial-role">Founder, Maison Lumière</p>
-      </div>
-      <div class="testimonial reveal">
-        <p class="testimonial-text">There is a category of studio that operates above the industry standard, and then there is Aurum. Their work is not creative service — it is creative authority.</p>
-        <p class="testimonial-author">James Whitfield</p>
-        <p class="testimonial-role">Chief Creative Officer, Alderton Group</p>
-      </div>
-      <div class="testimonial reveal">
-        <p class="testimonial-text">Our new digital presence increased qualified inquiries by 340% within sixty days. The investment in Aurum is the most measurable decision we've ever made.</p>
-        <p class="testimonial-author">Dr. Amara Osei</p>
-        <p class="testimonial-role">Director, Sovereign Capital Partners</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-
-<section id="cta">
-  <div class="cta-bg-lines"></div>
-  <div class="cta-glow"></div>
-  <div class="cta-inner">
-    <h2 class="cta-title reveal">Ready to<br>Build <em>Something</em><br>Extraordinary?</h2>
-    <p class="cta-sub reveal">We accept a limited number of new engagements each quarter.<br>Reserve your consultation before the window closes.</p>
-    <div class="cta-actions reveal">
-      <a href="#" class="btn-primary">Request a Consultation</a>
-      <a href="#" class="btn-ghost">View Our Process</a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-
-<footer>
-  <div class="footer-top">
-    <div>
-      <div class="footer-brand">Aurum</div>
-      <p class="footer-tagline">A bespoke creative studio for those who refuse to compromise on the extraordinary.</p>
-    </div>
-    <div>
-      <p class="footer-col-title">Studio</p>
-      <ul class="footer-links">
-        <li><a href="#">About</a></li>
-        <li><a href="#">Our Process</a></li>
-        <li><a href="#">Studio Philosophy</a></li>
-        <li><a href="#">Careers</a></li>
-      </ul>
-    </div>
-    <div>
-      <p class="footer-col-title">Services</p>
-      <ul class="footer-links">
-        <li><a href="#">Brand Identity</a></li>
-        <li><a href="#">Digital Experience</a></li>
-        <li><a href="#">Creative Direction</a></li>
-        <li><a href="#">Art Direction</a></li>
-      </ul>
-    </div>
-    <div>
-      <p class="footer-col-title">Connect</p>
-      <ul class="footer-links">
-        <li><a href="#">Inquiries</a></li>
-        <li><a href="#">Press</a></li>
-        <li><a href="#">Instagram</a></li>
-        <li><a href="#">LinkedIn</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p class="footer-copy">© MMXXVI Aurum Studio. All rights reserved.</p>
-    <div class="footer-legal">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms</a>
-      <a href="#">Cookie Settings</a>
-    </div>
-  </div>
-</footer>
+<div class="cart" onclick="sendOrder()">Order WhatsApp</div>
 
 <script>
-// ─── CURSOR ───────────────────────────────────────────────
-const cursor = document.getElementById('cursor');
-const ring = document.getElementById('cursorRing');
-let mx = 0, my = 0, rx = 0, ry = 0;
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-function animateCursor() {
-  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-  requestAnimationFrame(animateCursor);
-}
-animateCursor();
-document.querySelectorAll('a, button, .service-card').forEach(el => {
-  el.addEventListener('mouseenter', () => ring.classList.add('hovered'));
-  el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
-});
-
-// ─── THREE.JS PARTICLE FIELD ──────────────────────────────
-const canvas = document.getElementById('hero-canvas');
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 80;
-
-// Particle system
-const particleCount = 1800;
-const positions = new Float32Array(particleCount * 3);
-const sizes = new Float32Array(particleCount);
-const opacities = new Float32Array(particleCount);
-const speeds = new Float32Array(particleCount);
-
-for (let i = 0; i < particleCount; i++) {
-  positions[i * 3]     = (Math.random() - 0.5) * 200;
-  positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
-  positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
-  sizes[i] = Math.random() * 1.5 + 0.3;
-  opacities[i] = Math.random() * 0.6 + 0.1;
-  speeds[i] = Math.random() * 0.3 + 0.05;
-}
-
-const geo = new THREE.BufferGeometry();
-geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-// Circular texture
-const texCanvas = document.createElement('canvas');
-texCanvas.width = 32; texCanvas.height = 32;
-const ctx = texCanvas.getContext('2d');
-const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-grad.addColorStop(0, 'rgba(201,168,76,1)');
-grad.addColorStop(0.5, 'rgba(201,168,76,0.4)');
-grad.addColorStop(1, 'rgba(201,168,76,0)');
-ctx.fillStyle = grad;
-ctx.fillRect(0, 0, 32, 32);
-const texture = new THREE.CanvasTexture(texCanvas);
-
-const mat = new THREE.PointsMaterial({
-  size: 0.8,
-  map: texture,
-  transparent: true,
-  opacity: 0.5,
-  depthWrite: false,
-  blending: THREE.AdditiveBlending,
-  color: new THREE.Color('#c9a84c')
-});
-
-const particles = new THREE.Points(geo, mat);
-scene.add(particles);
-
-// Connection lines (sparse)
-const lineGeo = new THREE.BufferGeometry();
-const linePositions = [];
-for (let i = 0; i < 60; i++) {
-  const ax = (Math.random() - 0.5) * 200;
-  const ay = (Math.random() - 0.5) * 200;
-  const az = (Math.random() - 0.5) * 40;
-  const bx = ax + (Math.random() - 0.5) * 40;
-  const by = ay + (Math.random() - 0.5) * 40;
-  const bz = az + (Math.random() - 0.5) * 10;
-  linePositions.push(ax, ay, az, bx, by, bz);
-}
-lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-const lineMat = new THREE.LineBasicMaterial({ color: 0xc9a84c, transparent: true, opacity: 0.06 });
-const lines = new THREE.LineSegments(lineGeo, lineMat);
-scene.add(lines);
-
-// Mouse parallax
-let mouseX = 0, mouseY = 0;
-document.addEventListener('mousemove', e => {
-  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-});
-
-let t = 0;
-function animate() {
-  requestAnimationFrame(animate);
-  t += 0.003;
-  
-  // Float particles
-  const pos = particles.geometry.attributes.position.array;
-  for (let i = 0; i < particleCount; i++) {
-    pos[i * 3 + 1] += speeds[i] * 0.04;
-    if (pos[i * 3 + 1] > 100) pos[i * 3 + 1] = -100;
-    pos[i * 3] += Math.sin(t + i * 0.01) * 0.01;
+const DEFAULT_PRODUCTS = [
+  {
+    id:1,
+    name:"Premium Baby Outfit",
+    category:"Baby",
+    price:220,
+    oldPrice:280,
+    stock:"in",
+    emoji:"👶",
+    image:"",
+    tag:"New",
+    description:"Soft and comfortable baby outfit."
+  },
+  {
+    id:2,
+    name:"Rasees Rose Perfume",
+    category:"Perfume",
+    price:180,
+    oldPrice:220,
+    stock:"low",
+    emoji:"🌸",
+    image:"",
+    tag:"Best Seller",
+    description:"Elegant rose fragrance."
   }
-  particles.geometry.attributes.position.needsUpdate = true;
-  
-  // Slow drift
-  particles.rotation.y = t * 0.06 + mouseX * 0.1;
-  particles.rotation.x = mouseY * 0.05;
-  lines.rotation.y = t * 0.04;
-  
-  camera.position.x += (mouseX * 5 - camera.position.x) * 0.03;
-  camera.position.y += (-mouseY * 3 - camera.position.y) * 0.03;
-  
-  renderer.render(scene, camera);
+];
+
+const DEFAULT_INFO = {
+  brandName:"Dreamify",
+  heroText:"Premium boutique shopping experience",
+  whatsapp:"960000000"
+};
+
+if(!localStorage.getItem("dreamifyProducts")){
+  localStorage.setItem("dreamifyProducts",JSON.stringify(DEFAULT_PRODUCTS));
 }
-animate();
 
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// ─── SCROLL REVEAL ─────────────────────────────────────────
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-// ─── COUNTER ANIMATION ────────────────────────────────────
-function animateCounter(el, target, suffix='') {
-  let start = 0;
-  const step = target / 60;
-  const timer = setInterval(() => {
-    start += step;
-    if (start >= target) { start = target; clearInterval(timer); }
-    el.textContent = Math.floor(start) + suffix;
-  }, 16);
+if(!localStorage.getItem("dreamifyInfo")){
+  localStorage.setItem("dreamifyInfo",JSON.stringify(DEFAULT_INFO));
 }
-const countObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const nums = e.target.querySelectorAll('.stat-number');
-      const values = [340, 18, 97, 11];
-      const suffixes = ['+', '', '%', ''];
-      nums.forEach((n, i) => animateCounter(n, values[i], suffixes[i]));
-      countObserver.unobserve(e.target);
-    }
+
+let cart = [];
+
+function getProducts(){
+  return JSON.parse(localStorage.getItem("dreamifyProducts")) || DEFAULT_PRODUCTS;
+}
+
+function getInfo(){
+  return JSON.parse(localStorage.getItem("dreamifyInfo")) || DEFAULT_INFO;
+}
+
+function loadInfo(){
+  const info = getInfo();
+  document.getElementById("brandName").innerText = info.brandName || "Dreamify";
+  document.getElementById("heroText").innerText = info.heroText || "";
+}
+
+function renderProducts(){
+  const products = getProducts();
+  const search = document.getElementById("search").value.toLowerCase();
+  const category = document.getElementById("category").value;
+
+  let list = products.filter(p=>{
+    const matchSearch = p.name.toLowerCase().includes(search);
+    const matchCategory = category === "all" || p.category === category;
+    return matchSearch && matchCategory;
   });
-}, { threshold: 0.4 });
-const statGrid = document.querySelector('.stat-grid');
-if (statGrid) countObserver.observe(statGrid);
 
-// ─── NAV SCROLL EFFECT ────────────────────────────────────
-const nav = document.querySelector('nav');
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 60) {
-    nav.style.background = 'rgba(10,9,5,0.96)';
-    nav.style.borderBottom = '1px solid rgba(201,168,76,0.1)';
-  } else {
-    nav.style.background = 'linear-gradient(to bottom, rgba(10,9,5,0.9) 0%, transparent 100%)';
-    nav.style.borderBottom = 'none';
+  document.getElementById("productGrid").innerHTML = list.map(p=>`
+    <div class="card">
+      <div class="image-box">
+        ${p.image ? `<img src="${p.image}" alt="${p.name}">` : `<div class="emoji">${p.emoji || "🛍️"}</div>`}
+      </div>
+
+      <div class="info">
+        <span class="badge">${p.tag || "New"}</span>
+        <h3>${p.name}</h3>
+        <p>${p.description || ""}</p>
+        <p>${p.stock === "out" ? "Sold Out" : p.stock === "low" ? "Limited Stock" : "In Stock"}</p>
+
+        <div>
+          <span class="price">MVR ${p.price}</span>
+          ${p.oldPrice ? `<span class="old">MVR ${p.oldPrice}</span>` : ""}
+        </div>
+
+        <br>
+
+        <button onclick="addToCart(${p.id})" ${p.stock==="out"?"disabled":""}>
+          ${p.stock==="out"?"Sold Out":"Add to Order"}
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function addToCart(id){
+  const product = getProducts().find(p=>p.id===id);
+  if(!product)return;
+
+  const existing = cart.find(i=>i.id===id);
+  if(existing){
+    existing.qty++;
+  }else{
+    cart.push({...product,qty:1});
   }
-});
+
+  alert(product.name + " added to order");
+}
+
+function sendOrder(){
+  const info = getInfo();
+
+  if(cart.length === 0){
+    alert("Please add product first");
+    return;
+  }
+
+  const lines = cart.map(i=>`• ${i.name} x${i.qty} - MVR ${i.price*i.qty}`).join("%0A");
+  const total = cart.reduce((sum,i)=>sum + i.price*i.qty,0);
+
+  const msg = `Hello ${info.brandName},%0A%0AI would like to order:%0A${lines}%0A%0ATotal: MVR ${total}`;
+  window.open(`https://wa.me/${info.whatsapp}?text=${msg}`,"_blank");
+}
+
+loadInfo();
+renderProducts();
 </script>
 
 </body>
